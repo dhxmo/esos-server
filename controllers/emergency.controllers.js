@@ -13,6 +13,7 @@ exports.createRequest = async (req, res) => {
     try {
         const request = await requestService.createRequest(req.body);
         res.json({ data: request, status: "success" });
+        console.log(request);
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
@@ -26,3 +27,7 @@ exports.getRequestById = async (req, res) => {
         res.status(500).json({ error: err.message });
     }
 };
+
+exports.getHealthCheck = async (req, res) => {
+    res.json({ data: "pong", status: "success" })
+}
