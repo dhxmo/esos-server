@@ -11,6 +11,9 @@ const Role = db.role;
 require('dotenv').config()
 const { host, port, MONGODB_URI, COOKIE_SECRET } = process.env;
 
+const authRoutes = require('./routes/auth.routes');
+const testRoutes = require('./routes/user.routes');
+const emergencyRoutes = require("./routes/emergency.routes");
 
 
 var corsOptions = {
@@ -25,13 +28,13 @@ app.use(express.urlencoded({ extended: true }));
 
 app.use(
     cookieSession({
-        name: "emeregency-service-session",
+        name: "emergency-service-session",
         secret: `${COOKIE_SECRET}`,
         httpOnly: true
     })
 );
 
-app.use("/api/requests", requestRoutes);
+// app.use("/api/requests", requestRoutes);
 app.get("/healthcheck", (req, res) => {
     res.json({ message: "Health is good" });
 });
@@ -72,8 +75,11 @@ async function initial() {
         console.error("Error initializing roles", err);
     }
 }
-require('./routes/auth.routes')(app);
-require('./routes/user.routes')(app);
+
+// add routes to app
+authRoutes(app);
+testRoutes(app);
+emergencyRoutes(app);
 
 app.listen(port, () => {
     console.log(`Server is running on port ${port}`);

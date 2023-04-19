@@ -1,9 +1,19 @@
-const express = require("express");
-const { getAllRequests, createRequest, getRequestById } = require("../controllers/emergency.controller")
+const emergencyControllers = require("../controllers/emergency.controller");
+const { authJwt } = require("../middleware");
 
-const router = express.Router();
+module.exports = function (app) {
+    app.use(function (req, res, next) {
+        res.header(
+            "Access-Control-Allow-Headers",
+            "Origin, Content-Type, Accept"
+        );
+        next();
+    });
 
-router.route("/").get(getAllRequests).post(createRequest);
-router.route("/:id").get(getRequestById);
+    app.post("/api/emergency/call", [authJwt.verifyToken, authJwt.isUser], emergencyControllers.createEmergency);
 
-module.exports = router;
+    app.get("/api/emergency/get-all", [authJwt.verifyToken, authJwt.isAdmin], emergencyControllers.getAllEmergencies);
+
+    app.get("/api/emergency/get/:id", [authJwt.verifyToken, authJwt.isAdmin], emergencyControllers.getEmergencyById);
+
+};

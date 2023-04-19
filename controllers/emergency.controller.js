@@ -1,27 +1,33 @@
-const requestService = require("../services/emergency.service");
+const db = require("../models");
+const Emergency = db.emergency;
 
-exports.getAllRequests = async (req, res) => {
+exports.getAllEmergencies = async (req, res) => {
     try {
-        const requests = await requestService.getAllRequests();
+        const requests = await Emergency.find();
         res.json({ data: requests, status: "success" });
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
 };
 
-exports.createRequest = async (req, res) => {
+exports.createEmergency = async (req, res) => {
     try {
-        const request = await requestService.createRequest(req.body);
+        const request = await Emergency.create({
+            latitude: req.body.latitude,
+            longitude: req.body.longitude,
+            selected: req.body.selected,
+            emergency: req.body.emergency,
+            userId: req.userId
+        });
         res.json({ data: request, status: "success" });
-        console.log(request);
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
 };
 
-exports.getRequestById = async (req, res) => {
+exports.getEmergencyById = async (req, res) => {
     try {
-        const request = await requestService.getRequestById(req.params.id);
+        const request = await Emergency.findById(req.params.id);
         res.json({ data: request, status: "success" });
     } catch (err) {
         res.status(500).json({ error: err.message });

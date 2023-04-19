@@ -1,15 +1,15 @@
 const mongoose = require("mongoose");
-const Schema = mongoose.Schema;
 
-const requestSchema = new mongoose.Schema({
+const Emergency = mongoose.model('Request', new mongoose.Schema({
     latitude: Number,
     longitude: Number,
     selected: String,
     emergency: Boolean,
+    userId: String,
     createdAt: {
         type: Date,
         default: Date.now,
     },
-});
+}));
 
-module.exports = mongoose.model('Request', requestSchema);
+module.exports = Emergency 
