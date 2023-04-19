@@ -22,71 +22,55 @@ verifyToken = (req, res, next) => {
     });
 };
 
-isAdmin = (req, res, next) => {
-    User.findById(req.userId).exec((err, user) => {
-        if (err) {
-            res.status(500).send({ message: err });
+isAdmin = async (req, res, next) => {
+    try {
+        const user = await User.findById(req.userId);
+        const roles = await Role.find({ _id: { $in: user.roles } });
+        const adminRole = roles.find((role) => role.name === "admin");
+        if (!adminRole) {
+            res.status(403).send({ message: "Require Admin Role!" });
             return;
         }
-
-        Role.find(
-            {
-                _id: { $in: user.roles },
-            },
-            (err, roles) => {
-                if (err) {
-                    res.status(500).send({ message: err });
-                    return;
-                }
-
-                for (let i = 0; i < roles.length; i++) {
-                    if (roles[i].name === "admin") {
-                        next();
-                        return;
-                    }
-                }
-
-                res.status(403).send({ message: "Require Admin Role!" });
-                return;
-            }
-        );
-    });
+        next();
+    } catch (err) {
+        res.status(500).send({ message: err });
+    }
 };
 
-isAmbulance = (req, res, next) => {
-    User.findById(req.userId).exec((err, user) => {
-        if (err) {
-            res.status(500).send({ message: err });
+isAmbulance = async (req, res, next) => {
+    try {
+        const user = await User.findById(req.userId);
+        const roles = await Role.find({ _id: { $in: user.roles } });
+        const ambulanceRole = roles.find((role) => role.name === "ambulance" || role.name === 'admin');
+        if (!ambulanceRole) {
+            res.status(403).send({ message: "Require Ambulance Role!" });
             return;
         }
+        next();
+    } catch (err) {
+        res.status(500).send({ message: err });
+    }
+};
 
-        Role.find(
-            {
-                _id: { $in: user.roles },
-            },
-            (err, roles) => {
-                if (err) {
-                    res.status(500).send({ message: err });
-                    return;
-                }
-
-                for (let i = 0; i < roles.length; i++) {
-                    if (roles[i].name === "ambulance") {
-                        next();
-                        return;
-                    }
-                }
-
-                res.status(403).send({ message: "Require Amublance Role!" });
-                return;
-            }
-        );
-    });
+isUser = async (req, res, next) => {
+    try {
+        const user = await User.findById(req.userId);
+        const roles = await Role.find({ _id: { $in: user.roles } });
+        const userRole = roles.find((role) => role.name === "user" || role.name === 'admin');
+        if (!userRole) {
+            res.status(403).send({ message: "Require User Role!" });
+            return;
+        }
+        next();
+    } catch (err) {
+        res.status(500).send({ message: err });
+    }
 };
 
 const authJwt = {
     verifyToken,
     isAdmin,
     isAmbulance,
+    isUser
 };
 module.exports = authJwt;
