@@ -1,5 +1,5 @@
 const express = require("express");
-const { getAllRequests, createRequest, getRequestById, getHealthCheck } = require("../controllers/emergency.controllers")
+const { getAllRequests, createRequest, getRequestById, getHealthCheck } = require("../controllers/emergency.controller")
 
 const router = express.Router();
 

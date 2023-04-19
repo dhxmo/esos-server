@@ -1,4 +1,4 @@
-const requestService = require("../services//emergency.service");
+const requestService = require("../services/emergency.service");
 
 exports.getAllRequests = async (req, res) => {
     try {
