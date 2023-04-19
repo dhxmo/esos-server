@@ -27,7 +27,3 @@ exports.getRequestById = async (req, res) => {
         res.status(500).json({ error: err.message });
     }
 };
-
-exports.getHealthCheck = async (req, res) => {
-    res.json({ data: "pong", status: "success" })
-}
