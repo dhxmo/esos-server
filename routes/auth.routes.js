@@ -30,6 +30,8 @@ module.exports = function (app) {
 
     app.post("/api/user/logout", controller.logout);
 
+    app.post("/api/user/ban/:id", [authJwt.verifyToken, authJwt.isAdmin], controller.banUser);
+
     app.post(
         "/api/ambulance/register",
         [authJwt.verifyToken, authJwt.isAdmin, verifySignUp.checkAmbulanceDuplicateEmail, verifySignUp.checkAmbulanceDuplicateNumber],
