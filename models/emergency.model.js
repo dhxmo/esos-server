@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 
-const Emergency = mongoose.model('Request', new mongoose.Schema({
+const Emergency = mongoose.model('EmergencyRequest', new mongoose.Schema({
     latitude: Number,
     longitude: Number,
     selected: String,

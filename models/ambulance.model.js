@@ -1,13 +1,15 @@
 const mongoose = require("mongoose");
 
-const User = mongoose.model(
-    "User",
+const Ambulance = mongoose.model(
+    "Ambulance",
     new mongoose.Schema({
         email: { type: String, required: true, unique: true },
         password: { type: String, required: true },
         phoneNumber: { type: String, required: true, unique: true },
-        role: { type: String, default: 'user' },
+        companyName: { type: String, required: true },
+        ambulanceType: { type: String, required: true },
+        role: { type: String, default: 'ambulance' },
     })
 );
 
-module.exports = User;
+module.exports = Ambulance;

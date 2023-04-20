@@ -1,6 +1,6 @@
 const db = require("../models");
-const ROLES = db.ROLES;
 const User = db.user;
+const Ambulance = db.ambulance;
 
 checkDuplicateEmail = async (req, res, next) => {
     try {
@@ -15,24 +15,50 @@ checkDuplicateEmail = async (req, res, next) => {
     }
 };
 
-checkRolesExisted = (req, res, next) => {
-    if (req.body.roles) {
-        for (let i = 0; i < req.body.roles.length; i++) {
-            if (!ROLES.includes(req.body.roles[i])) {
-                res.status(400).send({
-                    message: `Failed! Role ${req.body.roles[i]} does not exist!`
-                });
-                return;
-            }
+checkDuplicateNumber = async (req, res, next) => {
+    try {
+        const user = await User.findOne({ email: req.body.phoneNumber });
+        if (user) {
+            res.status(400).send({ message: "Failed! Phone number is already in use!" });
+            return;
         }
+        next();
+    } catch (err) {
+        res.status(500).send({ message: err });
     }
+};
 
-    next();
+checkAmbulanceDuplicateEmail = async (req, res, next) => {
+    try {
+        const ambulance = await Ambulance.findOne({ email: req.body.email });
+        if (ambulance) {
+            res.status(400).send({ message: "Failed! Email is already in use!" });
+            return;
+        }
+        next();
+    } catch (err) {
+        res.status(500).send({ message: err });
+    }
+};
+
+checkAmbulanceDuplicateNumber = async (req, res, next) => {
+    try {
+        const ambulance = await Ambulance.findOne({ email: req.body.phoneNumber });
+        if (ambulance) {
+            res.status(400).send({ message: "Failed! Phone number is already in use!" });
+            return;
+        }
+        next();
+    } catch (err) {
+        res.status(500).send({ message: err });
+    }
 };
 
 const verifySignUp = {
     checkDuplicateEmail,
-    checkRolesExisted
+    checkDuplicateNumber,
+    checkAmbulanceDuplicateEmail,
+    checkAmbulanceDuplicateNumber
 };
 
 module.exports = verifySignUp;
