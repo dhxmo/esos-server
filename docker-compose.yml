@@ -2,10 +2,10 @@ version: '3.7'
 services:
   esos-server:
     image: esos-server
-    environment:  
+    environment:
       host: http://localhost
       port: 8080
-      MONGODB_URI: 'mongodb://localhost:27017/esos-mongo'
+      MONGODB_URI: 'mongodb://esos-mongo:27017/esos-mongo'
       COOKIE_SECRET: '0e9eadd8-0525-4a80-b55b-590182f9b69f'
       JWT_SECRET: '675a6315-bef2-439b-a182-cbe63b8aac3b'
     ports:
@@ -18,5 +18,10 @@ services:
       - 27017:27017
     volumes:
       - esos-mongodb-volume:/data/db
+    healthcheck:
+      test: [ "CMD", "mongo", "--eval", "db.runCommand('ping')" ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
 volumes:
   esos-mongodb-volume:
