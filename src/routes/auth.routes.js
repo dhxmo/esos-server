@@ -11,34 +11,26 @@ module.exports = function (app) {
         next();
     });
 
-    // TODO: remove once admin created 
+    app.post("/api/logout", controller.logout);
+
     app.post(
         "/api/admin/register",
         controller.adminRegister
     );
-
     app.post(
-        "/api/user/register",
-        [
-            verifySignUp.checkDuplicateEmail,
-            verifySignUp.checkDuplicateNumber
-        ],
-        controller.userRegister
+        "/api/admin/login",
+        controller.adminLogIn
     );
-
-    app.post("/api/user/login", controller.userLogIn);
-
-    app.post("/api/user/logout", controller.logout);
-
-    app.post("/api/user/ban/:id", [authJwt.verifyToken, authJwt.isAdmin], controller.banUser);
+    app.post("/api/user/ban/:phoneNumber", [authJwt.verifyToken, authJwt.isAdmin], controller.adminBanUser);
+    app.post("/api/user/unban/:phoneNumber", [authJwt.verifyToken, authJwt.isAdmin], controller.adminUnBanUser);
 
     app.post(
         "/api/ambulance/register",
-        [authJwt.verifyToken, authJwt.isAdmin, verifySignUp.checkAmbulanceDuplicateEmail, verifySignUp.checkAmbulanceDuplicateNumber],
+        [authJwt.verifyToken, authJwt.isAdmin, verifySignUp.checkAmbulanceDuplicateNumber],
         controller.ambulanceRegister
     );
-
     app.post("/api/ambulance/login", controller.ambulanceLogIn);
 
-    app.post("/api/ambulance/logout", controller.logout);
+    app.post("/api/user/send-otp", controller.userSendOtp);
+    app.post("/api/user/verify-otp", controller.userVerifyOtp);
 };

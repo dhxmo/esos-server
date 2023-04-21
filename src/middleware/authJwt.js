@@ -1,6 +1,7 @@
 const jwt = require("jsonwebtoken");
 const db = require("../models");
 const User = db.user;
+const Admin = db.admin;
 const Ambulance = db.ambulance;
 
 require('dotenv').config()
@@ -10,22 +11,22 @@ verifyToken = (req, res, next) => {
     let token = req.session.token;
 
     if (!token) {
-        return res.status(403).send({ message: "No token provided!" });
+        return res.status(403).send({ message: "invalid token" });
     }
 
     jwt.verify(token, JWT_SECRET, (err, decoded) => {
         if (err) {
             return res.status(401).send({ message: "Unauthorized!" });
         }
-        req.userId = decoded.id;
+        req.id = decoded.id;
         next();
     });
 };
 
 isAdmin = async (req, res, next) => {
     try {
-        const user = await User.findById(req.userId);
-        if (user.role !== 'admin') {
+        const admin = await Admin.findById(req.id);
+        if (!admin) {
             res.status(403).send({ message: "Require Admin Role!" });
             return;
         }
@@ -37,8 +38,8 @@ isAdmin = async (req, res, next) => {
 
 isAmbulance = async (req, res, next) => {
     try {
-        const ambulance = await Ambulance.findById(req.userId);
-        if (ambulance.role !== 'ambulance') {
+        const ambulance = await Ambulance.findById(req.id);
+        if (!ambulance) {
             res.status(403).send({ message: "Require Ambulance Role!" });
             return;
         }
@@ -50,8 +51,8 @@ isAmbulance = async (req, res, next) => {
 
 isUser = async (req, res, next) => {
     try {
-        const user = await User.findById(req.userId);
-        if (user.role !== 'user') {
+        const user = await User.findById(req.id);
+        if (!user) {
             res.status(403).send({ message: "Require User Role!" });
             return;
         }

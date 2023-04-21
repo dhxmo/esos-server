@@ -3,7 +3,7 @@ const User = db.user;
 
 checkBannedUser = async (req, res, next) => {
     try {
-        const user = await User.findById(req.userId);
+        const user = await User.findById(req.id);
         if (user.banned === true) {
             res.status(400).send({ message: "Banned User!" });
             return;
