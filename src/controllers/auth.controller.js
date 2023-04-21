@@ -8,7 +8,7 @@ var bcrypt = require("bcryptjs");
 require('dotenv').config()
 const { JWT_SECRET } = process.env;
 
-const phoneNumberRegex = /^\+91\d{10}$/;
+const phoneNumberRegex = /^\d{10}$/;
 
 // TODO: remove once admin is registered
 exports.adminRegister = async (req, res) => {
@@ -35,6 +35,7 @@ exports.adminRegister = async (req, res) => {
 };
 
 exports.userRegister = async (req, res) => {
+    console.log(req);
     try {
         const phoneNumber = req.body.phoneNumber;
 

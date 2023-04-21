@@ -1,10 +1,22 @@
 version: '3.7'
 services:
-  emergency-services:
+  esos-server:
+    image: esos-server
+    environment:  
+      host: http://localhost
+      port: 8080
+      MONGODB_URI: 'mongodb://localhost:27017/esos-mongo'
+      COOKIE_SECRET: '0e9eadd8-0525-4a80-b55b-590182f9b69f'
+      JWT_SECRET: '675a6315-bef2-439b-a182-cbe63b8aac3b'
+    ports:
+      - 8080:8080
+    depends_on:
+      - esos-mongo
+  esos-mongo:
     image: mongo:latest
     ports:
       - 27017:27017
     volumes:
-      - mongodb_data_container:/data/db
+      - esos-mongodb-volume:/data/db
 volumes:
-  mongodb_data_container:
+  esos-mongodb-volume:
