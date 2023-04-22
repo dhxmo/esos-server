@@ -12,8 +12,11 @@ const testRoutes = require('./routes/user.routes');
 const emergencyRoutes = require("./routes/emergency.routes");
 
 
-var corsOptions = {
-    origin: `${host}:${port}`
+
+const corsOptions = {
+    origin: '*',
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    allowedHeaders: ['Content-Type', 'Authorization']
 };
 
 //middleware

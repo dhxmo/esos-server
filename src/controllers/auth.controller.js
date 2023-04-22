@@ -14,10 +14,13 @@ const client = require('twilio')(TWILIO_ACCOUNT_SID, _TWILIO_AUTH_TOKEN);
 async function createAndSendToken(req, res, user) {
     const token = jwt.sign({ id: user.id }, JWT_SECRET, { expiresIn: 86400 });
     const authority = user.role.toUpperCase();
+
     req.session.token = token;
-    res.status(200).send({
-        id: user._id,
-        role: authority,
+
+    res.status(200).json({
+        message: "Logged in successfully",
+        token: token,
+        authority: authority
     });
 }
 // TODO: remove once admin is registered
