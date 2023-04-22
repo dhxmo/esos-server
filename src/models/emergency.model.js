@@ -6,6 +6,7 @@ const Emergency = mongoose.model('EmergencyRequest', new mongoose.Schema({
     selected: String,
     emergency: Boolean,
     userId: String,
+    userPhone: String,
     createdAt: {
         type: Date,
         default: Date.now,

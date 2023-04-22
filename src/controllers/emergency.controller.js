@@ -17,7 +17,8 @@ exports.createEmergency = async (req, res) => {
             longitude: req.body.longitude,
             selected: req.body.selected,
             emergency: req.body.emergency,
-            userId: req.id
+            userId: req.id,
+            userPhone: req.body.userPhone
         });
         res.json({ data: request, status: "success" });
     } catch (err) {
