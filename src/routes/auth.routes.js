@@ -1,6 +1,6 @@
 const { verifySignUp } = require("../middleware");
 const controller = require("../controllers/auth.controller");
-const { authJwt } = require("../middleware");
+const { authJwt, rateLimit } = require("../middleware");
 
 module.exports = function (app) {
     app.use(function (_, res, next) {
@@ -31,6 +31,6 @@ module.exports = function (app) {
     );
     app.post("/api/ambulance/login", controller.ambulanceLogIn);
 
-    app.post("/api/user/send-otp", controller.userSendOtp);
+    app.post("/api/user/send-otp", [rateLimit], controller.userSendOtp);
     app.post("/api/user/verify-otp", controller.userVerifyOtp);
 };

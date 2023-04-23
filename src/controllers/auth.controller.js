@@ -11,6 +11,21 @@ const { JWT_SECRET, TWILIO_ACCOUNT_SID, _TWILIO_AUTH_TOKEN, TWILIO_SERVICE_SID }
 
 const client = require('twilio')(TWILIO_ACCOUNT_SID, _TWILIO_AUTH_TOKEN);
 
+const rateLimit = require('express-rate-limit');
+
+const rateLimiter = rateLimit({
+    windowMs: 24 * 60 * 60 * 1000, // 24 hrs in milliseconds
+    max: 3,
+    message: 'You have exceeded the 3 requests in 24 hrs limit!',
+    keyGenerator: function (req) {
+        return req.body.phoneNumber;
+    },
+    skip: function (req) {
+        return !req.body.phoneNumber;
+    }
+});
+
+
 async function createAndSendToken(req, res, user) {
     const token = jwt.sign({ id: user.id }, JWT_SECRET, { expiresIn: 86400 });
     const authority = user.role.toUpperCase();
@@ -132,11 +147,9 @@ exports.userSendOtp = async (req, res) => {
             to: `+91${phoneNumber}`,
             channel: 'sms',
         });
-        console.log(verification.sid);
-        res.json({ success: true });
+        res.json({ success: true, data: verification.sid });
     } catch (err) {
-        console.error(err);
-        res.json({ success: false });
+        res.json({ success: false, data: err });
     }
 }
 
