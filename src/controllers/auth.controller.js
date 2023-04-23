@@ -26,7 +26,7 @@ async function createAndSendToken(req, res, user) {
 // TODO: remove once admin is registered
 exports.adminRegister = async (req, res) => {
     try {
-        const phoneNumber = '+91' + req.body.phoneNumber;
+        const phoneNumber = `+91${req.body.phoneNumber}`;
 
         const admin = new Admin({
             phoneNumber: phoneNumber,
@@ -43,7 +43,7 @@ exports.adminRegister = async (req, res) => {
 
 exports.adminLogIn = async (req, res) => {
     try {
-        const admin = await Admin.findOne({ phoneNumber: '+91' + req.body.phoneNumber });
+        const admin = await Admin.findOne({ phoneNumber: `+91${req.body.phoneNumber}` });
         if (!admin) {
             return res.status(404).send({ message: "Admin Not found." });
         }
@@ -60,7 +60,7 @@ exports.adminLogIn = async (req, res) => {
 
 exports.adminBanUser = async (req, res) => {
     try {
-        const filter = { phoneNumber: '+91' + req.params.phoneNumber };
+        const filter = { phoneNumber: `+91${req.params.phoneNumber}` };
         const update = { banned: true };
         const result = await User.updateMany(filter, update);
 
@@ -76,7 +76,7 @@ exports.adminBanUser = async (req, res) => {
 
 exports.adminUnBanUser = async (req, res) => {
     try {
-        const filter = { phoneNumber: '+91' + req.params.phoneNumber };
+        const filter = { phoneNumber: `+91${req.params.phoneNumber}` };
         const update = { banned: false };
         const result = await User.updateMany(filter, update);
 
@@ -92,10 +92,8 @@ exports.adminUnBanUser = async (req, res) => {
 
 exports.ambulanceRegister = async (req, res) => {
     try {
-        const phoneNumber = '+91' + req.body.phoneNumber;
-
         const ambulance = new Ambulance({
-            phoneNumber: phoneNumber,
+            phoneNumber: `+91${req.body.phoneNumber}`,
             password: await bcrypt.hash(req.body.password, 15),
             companyName: req.body.companyName,
             ambulanceType: req.body.ambulanceType
@@ -111,7 +109,7 @@ exports.ambulanceRegister = async (req, res) => {
 
 exports.ambulanceLogIn = async (req, res) => {
     try {
-        const ambulance = await Ambulance.findOne({ phoneNumber: '+91' + req.body.phoneNumber });
+        const ambulance = await Ambulance.findOne({ phoneNumber: `+91${req.body.phoneNumber}` });
         if (!ambulance) {
             return res.status(404).send({ message: "Ambulance Not found." });
         }
@@ -142,6 +140,7 @@ exports.userSendOtp = async (req, res) => {
     }
 }
 
+
 exports.userVerifyOtp = async (req, res) => {
     const { phoneNumber, otp } = req.body;
     try {
@@ -151,12 +150,12 @@ exports.userVerifyOtp = async (req, res) => {
         });
         if (verificationCheck.status === 'approved') {
             console.log('OTP verification successful');
-            const user = await User.findOne({ phoneNumber: '+91' + req.body.phoneNumber });
+            const user = await User.findOne({ phoneNumber: `+91${phoneNumber}` });
 
             if (!user) {
                 try {
                     const user = new User({
-                        phoneNumber: '+91' + phoneNumber
+                        phoneNumber: `+91${phoneNumber}`
                     });
 
                     await user.save();
@@ -179,6 +178,7 @@ exports.userVerifyOtp = async (req, res) => {
         console.error(err);
         res.json({ success: false });
     }
+
 }
 
 exports.logout = async (req, res) => {
