@@ -17,7 +17,11 @@ module.exports = function (app) {
         verifyUserState.checkBannedUser
     ], emergencyControllers.createEmergency);
 
-    // app.post("/api/emergency/audio", emergencyControllers.uploadAudioToS3);
+    // app.post("/api/emergency/audio", [
+    //     authJwt.verifyToken,
+    //     authJwt.isUser,
+    //     verifyUserState.checkBannedUser
+    // ], emergencyControllers.uploadAudioToS3);
 
     app.get("/api/emergency/get-all", [authJwt.verifyToken, authJwt.isAdmin], emergencyControllers.getAllEmergencies);
 

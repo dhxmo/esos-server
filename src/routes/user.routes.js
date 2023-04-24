@@ -16,8 +16,8 @@ module.exports = function (app) {
 
     app.get(
         "/api/test/ambulance",
-        [authJwt.verifyToken, authJwt.isAmbulance],
-        controller.ambulanceBoard
+        [authJwt.verifyToken, authJwt.isAmbulanceDriver],
+        controller.ambulanceDriverBoard
     );
 
     app.get(

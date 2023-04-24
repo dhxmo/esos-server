@@ -2,7 +2,7 @@ const jwt = require("jsonwebtoken");
 const db = require("../models");
 const User = db.user;
 const Admin = db.admin;
-const Ambulance = db.ambulance;
+const AmbulanceDriver = db.ambulanceDriver;
 
 require('dotenv').config()
 const { JWT_SECRET } = process.env;
@@ -36,10 +36,10 @@ isAdmin = async (req, res, next) => {
     }
 };
 
-isAmbulance = async (req, res, next) => {
+isAmbulanceDriver = async (req, res, next) => {
     try {
-        const ambulance = await Ambulance.findById(req.id);
-        if (!ambulance) {
+        const ambulanceDriver = await AmbulanceDriver.findById(req.id);
+        if (!ambulanceDriver) {
             res.status(403).send({ message: "Require Ambulance Role!" });
             return;
         }
@@ -65,7 +65,7 @@ isUser = async (req, res, next) => {
 const authJwt = {
     verifyToken,
     isAdmin,
-    isAmbulance,
+    isAmbulanceDriver,
     isUser
 };
 module.exports = authJwt;

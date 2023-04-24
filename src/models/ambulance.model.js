@@ -1,14 +1,14 @@
 const mongoose = require("mongoose");
 
-const Ambulance = mongoose.model(
-    "Ambulance",
+const AmbulanceDriver = mongoose.model(
+    "AmbulanceDriver",
     new mongoose.Schema({
         phoneNumber: { type: String, required: true, unique: true },
         password: { type: String, required: true },
         companyName: { type: String, required: true },
         ambulanceType: { type: String, required: true },
-        role: { type: String, default: 'ambulance' },
+        role: { type: String, default: 'ambulance_driver' },
     })
 );
 
-module.exports = Ambulance;
+module.exports = AmbulanceDriver;

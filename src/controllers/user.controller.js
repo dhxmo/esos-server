@@ -1,20 +1,20 @@
 const db = require("../models");
 const User = db.user;
 
-exports.allAccess = (req, res) => {
+exports.allAccess = (_, res) => {
     res.status(200).send("Public Content.");
 };
 
-exports.userBoard = (req, res) => {
+exports.userBoard = (_, res) => {
     res.status(200).send("User Content.");
 };
 
-exports.adminBoard = (req, res) => {
+exports.adminBoard = (_, res) => {
     res.status(200).send("Admin Content.");
 };
 
-exports.ambulanceBoard = (req, res) => {
-    res.status(200).send("Ambulance Content.");
+exports.ambulanceDriverBoard = (_, res) => {
+    res.status(200).send("Ambulance Driver Content.");
 };
 
 exports.getUserByID = async (req, res) => {
@@ -26,7 +26,7 @@ exports.getUserByID = async (req, res) => {
     }
 }
 
-exports.getAllUsers = async (req, res) => {
+exports.getAllUsers = async (_, res) => {
     try {
         const requests = await User.find();
         res.json({ data: requests, status: "success" });

@@ -26,10 +26,10 @@ module.exports = function (app) {
 
     app.post(
         "/api/ambulance/register",
-        [authJwt.verifyToken, authJwt.isAdmin, verifySignUp.checkAmbulanceDuplicateNumber],
-        controller.ambulanceRegister
+        [authJwt.verifyToken, authJwt.isAdmin, verifySignUp.checkAmbulanceDriverDuplicateNumber],
+        controller.ambulanceDriverRegister
     );
-    app.post("/api/ambulance/login", controller.ambulanceLogIn);
+    app.post("/api/ambulance/login", controller.ambulanceDriverLogIn);
 
     app.post("/api/user/send-otp", [rateLimit], controller.userSendOtp);
     app.post("/api/user/verify-otp", controller.userVerifyOtp);

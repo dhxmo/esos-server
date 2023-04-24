@@ -1,7 +1,7 @@
 const db = require("../models");
 const User = db.user;
 const Admin = db.admin;
-const Ambulance = db.ambulance;
+const AmbulanceDriver = db.ambulanceDriver;
 
 var jwt = require("jsonwebtoken");
 var bcrypt = require("bcryptjs");
@@ -105,36 +105,36 @@ exports.adminUnBanUser = async (req, res) => {
     }
 };
 
-exports.ambulanceRegister = async (req, res) => {
+exports.ambulanceDriverRegister = async (req, res) => {
     try {
-        const ambulance = new Ambulance({
+        const ambulanceDriver = new AmbulanceDriver({
             phoneNumber: `+91${req.body.phoneNumber}`,
             password: await bcrypt.hash(req.body.password, 15),
             companyName: req.body.companyName,
             ambulanceType: req.body.ambulanceType
         });
 
-        await ambulance.save();
+        await ambulanceDriver.save();
 
-        return res.send({ message: "Ambulance was registered successfully!" });
+        return res.send({ message: "Ambulance driver was registered successfully!" });
     } catch (err) {
         return res.status(500).send({ message: err });
     }
 };
 
-exports.ambulanceLogIn = async (req, res) => {
+exports.ambulanceDriverLogIn = async (req, res) => {
     try {
-        const ambulance = await Ambulance.findOne({ phoneNumber: `+91${req.body.phoneNumber}` });
-        if (!ambulance) {
-            return res.status(404).send({ message: "Ambulance Not found." });
+        const ambulanceDriver = await AmbulanceDriver.findOne({ phoneNumber: `+91${req.body.phoneNumber}` });
+        if (!ambulanceDriver) {
+            return res.status(404).send({ message: "Ambulance driver Not found." });
         }
 
-        const passwordIsValid = await bcrypt.compare(req.body.password, ambulance.password);
+        const passwordIsValid = await bcrypt.compare(req.body.password, ambulanceDriver.password);
         if (!passwordIsValid) {
             return res.status(401).send({ message: "Invalid Password!" });
         }
 
-        createAndSendToken(req, res, ambulance);
+        createAndSendToken(req, res, ambulanceDriver);
     } catch (err) {
         res.status(500).send({ message: err });
     }
