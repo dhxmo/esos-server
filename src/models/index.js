@@ -11,5 +11,6 @@ db.emergency = require("./emergency.model")
 db.ambulanceDriver = require("./ambulance.model")
 db.rateLimit = require("./rateLimit.model")
 db.audioRecord = require("./audioRecording.model")
+db.driverLive = rquire("./driverLive.model.js")
 
 module.exports = db;

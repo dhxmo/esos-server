@@ -1,6 +1,7 @@
 const mongoose = require("mongoose");
 
-const Emergency = mongoose.model('EmergencyRequest', new mongoose.Schema({
+const DriverLive = mongoose.model('DriverLive', new mongoose.Schema({
+    driverId: String,
     location: {
         type: {
             type: String,
@@ -12,14 +13,11 @@ const Emergency = mongoose.model('EmergencyRequest', new mongoose.Schema({
             required: true
         }
     },
-    selected: String,
-    emergency: Boolean,
-    userId: String,
-    userPhone: String,
-    createdAt: {
+    availability: Boolean,
+    updatedAt: {
         type: Date,
         default: Date.now,
     },
 }).index({ location: '2dsphere' }));
 
-module.exports = Emergency 
+module.exports = DriverLive; 

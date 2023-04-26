@@ -7,6 +7,7 @@ const AmbulanceDriver = mongoose.model(
         password: { type: String, required: true },
         companyName: { type: String, required: true },
         ambulanceType: { type: String, required: true },
+        availability: { type: Boolean, required: true, default: false },
         role: { type: String, default: 'ambulance_driver' },
     })
 );

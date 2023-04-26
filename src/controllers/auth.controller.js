@@ -11,22 +11,7 @@ const { JWT_SECRET, TWILIO_ACCOUNT_SID, _TWILIO_AUTH_TOKEN, TWILIO_SERVICE_SID }
 
 const client = require('twilio')(TWILIO_ACCOUNT_SID, _TWILIO_AUTH_TOKEN);
 
-const rateLimit = require('express-rate-limit');
-
-const rateLimiter = rateLimit({
-    windowMs: 24 * 60 * 60 * 1000, // 24 hrs in milliseconds
-    max: 3,
-    message: 'You have exceeded the 3 requests in 24 hrs limit!',
-    keyGenerator: function (req) {
-        return req.body.phoneNumber;
-    },
-    skip: function (req) {
-        return !req.body.phoneNumber;
-    }
-});
-
-
-async function createAndSendToken(req, res, user) {
+const createAndSendToken = async (req, res, user) => {
     const token = jwt.sign({ id: user.id }, JWT_SECRET, { expiresIn: 86400 });
     const authority = user.role.toUpperCase();
 
@@ -38,7 +23,7 @@ async function createAndSendToken(req, res, user) {
         authority: authority
     });
 }
-// TODO: remove once admin is registered
+
 exports.adminRegister = async (req, res) => {
     try {
         const phoneNumber = `+91${req.body.phoneNumber}`;
@@ -152,7 +137,6 @@ exports.userSendOtp = async (req, res) => {
         res.json({ success: false, data: err });
     }
 }
-
 
 exports.userVerifyOtp = async (req, res) => {
     const { phoneNumber, otp } = req.body;

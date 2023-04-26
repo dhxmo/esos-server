@@ -1,4 +1,5 @@
 const db = require("../models");
+const { ambulanceSearchAndDeploy } = require("../utils/ambulanceSearchAndDeploy");
 const Emergency = db.emergency;
 // const Recording = db.audioRecord;
 
@@ -12,7 +13,7 @@ const Emergency = db.emergency;
 //     secretAccessKey: AWS_SECRET_ACCESS_KEY,
 // })
 
-exports.getAllEmergencies = async (req, res) => {
+exports.getAllEmergencies = async (_, res) => {
     try {
         const requests = await Emergency.find();
         res.json({ data: requests, status: "success" });
@@ -24,18 +25,24 @@ exports.getAllEmergencies = async (req, res) => {
 exports.createEmergency = async (req, res) => {
     try {
         const request = await Emergency.create({
-            latitude: req.body.latitude,
-            longitude: req.body.longitude,
+            location: {
+                type: 'Point',
+                coordinates: [req.body.longitude, req.body.latitude]
+            },
             selected: req.body.selected,
             emergency: req.body.emergency,
             userId: req.id,
             userPhone: req.body.userPhone
         });
         res.json({ data: request, status: "success" });
+
+        await ambulanceSearchAndDeploy();
     } catch (err) {
         res.json({ status: err });
     }
 };
+
+
 
 // exports.uploadAudioToS3 = async (req, res) => {
 // const emergency_id = req.body.emergencyId;

@@ -13,12 +13,14 @@ module.exports = function (app) {
 
     app.post("/api/logout", controller.logout);
 
+    // TODO: remove after initial register
     app.post(
         "/api/admin/register",
         controller.adminRegister
     );
     app.post(
         "/api/admin/login",
+        [rateLimit],
         controller.adminLogIn
     );
     app.post("/api/user/ban/:phoneNumber", [authJwt.verifyToken, authJwt.isAdmin], controller.adminBanUser);
@@ -29,7 +31,7 @@ module.exports = function (app) {
         [authJwt.verifyToken, authJwt.isAdmin, verifySignUp.checkAmbulanceDriverDuplicateNumber],
         controller.ambulanceDriverRegister
     );
-    app.post("/api/ambulance/login", controller.ambulanceDriverLogIn);
+    app.post("/api/ambulance/login", [rateLimit], controller.ambulanceDriverLogIn);
 
     app.post("/api/user/send-otp", [rateLimit], controller.userSendOtp);
     app.post("/api/user/verify-otp", controller.userVerifyOtp);

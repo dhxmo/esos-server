@@ -32,7 +32,7 @@ app.use(
     })
 );
 
-app.get("/healthcheck", (req, res) => {
+app.get("/healthcheck", (_, res) => {
     res.json({ message: "Health is good" });
 });
 
