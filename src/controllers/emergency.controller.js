@@ -1,5 +1,4 @@
 const db = require("../models");
-const { ambulanceSearchAndDeploy } = require("../utils/ambulanceSearchAndDeploy");
 const Emergency = db.emergency;
 // const Recording = db.audioRecord;
 
@@ -36,7 +35,7 @@ exports.createEmergency = async (req, res) => {
         });
         res.json({ data: request, status: "success" });
 
-        await ambulanceSearchAndDeploy();
+        // await ambulanceSearchAndDeploy();
     } catch (err) {
         res.json({ status: err });
     }
