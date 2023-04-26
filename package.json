@@ -25,6 +25,7 @@
     "node-fetch": "2",
     "nodemon": "^2.0.22",
     "query-string": "^8.1.0",
+    "rate-limiter-flexible": "^2.4.1",
     "socket.io": "^4.6.1",
     "twilio": "^4.10.0",
     "ws": "^8.13.0"
