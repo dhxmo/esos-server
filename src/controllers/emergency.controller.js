@@ -24,6 +24,18 @@ exports.getAllEmergencies = async (_, res) => {
 
 exports.createEmergency = async (req, res) => {
     try {
+        // find closest driver
+        const closestDriver = await findClosestDriver(Number(req.body.longitude), Number(req.body.latitude));
+        console.log(closestDriver);
+
+
+        //  update driver availability
+        const driver = await DriverLive.findOneAndUpdate(
+            { driverPhone: closestDriver.driverPhone },
+            { availability: false }
+        );
+        await driver.save();
+
         // create emergency call
         const request = await Emergency.create({
             location: {
@@ -33,19 +45,9 @@ exports.createEmergency = async (req, res) => {
             selected: req.body.selected,
             emergency: req.body.emergency,
             userId: req.id,
-            userPhone: req.body.userPhone
+            userPhone: req.body.userPhone,
+            assignedDriver: closestDriver.driverPhone
         });
-
-        // find closest driver
-        const closestDriver = await findClosestDriver(Number(req.body.longitude), Number(req.body.latitude));
-
-
-        //  update driver availability
-        const driver = await DriverLive.findOneAndUpdate(
-            { driverPhone: closestDriver.driverPhone },
-            { availability: false }
-        );
-        await driver.save();
 
         // - send push notification using firebase to get ready
         //  - use google maps API to route fastest path b/w patient lat/long and ambulance driver's lat/long

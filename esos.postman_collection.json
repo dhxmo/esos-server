@@ -326,6 +326,57 @@
 						}
 					},
 					"response": []
+				},
+				{
+					"name": "New Request",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"emergencyId\": \"123\",\n    \"fileUrl\": \"file:///data/user/0/host.exp.exponent/cache/ExperienceData/%2540dhxmo%252Fesos-client/Audio/recording-3c5359a2-1f70-4ccb-ad47-7abb98a00dd4.3gp\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "localhost:8080/api/emergency/audio",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"emergency",
+								"audio"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "New Request",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "wss://localhost:8080/websocket",
+							"protocol": "wss",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"websocket"
+							]
+						}
+					},
+					"response": []
 				}
 			]
 		},
@@ -368,7 +419,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"phoneNumber\": \"0000000002\",\n    \"password\": \"asdf\"\n}",
+							"raw": "{\n    \"phoneNumber\": 0000000002,\n    \"password\": \"asdf\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -404,6 +455,35 @@
 							"path": [
 								"api",
 								"logout"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Make Available",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"phoneNumber\": \"0000000002\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "localhost:8080/api/ambulance/change-availability",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"ambulance",
+								"change-availability"
 							]
 						}
 					},
@@ -495,26 +575,6 @@
 					"response": []
 				}
 			]
-		},
-		{
-			"name": "ping",
-			"request": {
-				"method": "GET",
-				"header": [],
-				"url": {
-					"raw": "localhost:8080/api/requests/ping",
-					"host": [
-						"localhost"
-					],
-					"port": "8080",
-					"path": [
-						"api",
-						"requests",
-						"ping"
-					]
-				}
-			},
-			"response": []
 		}
 	]
 }

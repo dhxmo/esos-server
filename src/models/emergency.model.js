@@ -12,10 +12,26 @@ const Emergency = mongoose.model('EmergencyRequest', new mongoose.Schema({
             required: true
         }
     },
-    selected: String,
-    emergency: Boolean,
-    userId: String,
-    userPhone: String,
+    selected: {
+        type: String,
+        required: true
+    },
+    emergency: {
+        type: Boolean,
+        require: true
+    },
+    userId: {
+        type: String,
+        required: true
+    },
+    userPhone: {
+        type: String,
+        required: true
+    },
+    assignedDriver: {
+        type: String,
+        required: true
+    },
     createdAt: {
         type: Date,
         default: Date.now,

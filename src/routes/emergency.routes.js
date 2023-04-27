@@ -3,7 +3,7 @@ const { authJwt } = require("../middleware");
 const verifyUserState = require("../middleware/verifyUserState");
 
 module.exports = function (app) {
-    app.use(function (req, res, next) {
+    app.use(function (_, res, next) {
         res.header(
             "Access-Control-Allow-Headers",
             "Origin, Content-Type, Accept"
@@ -12,9 +12,9 @@ module.exports = function (app) {
     });
 
     app.post("/api/emergency/call", [
-        // authJwt.verifyToken,
-        // authJwt.isUser,
-        // verifyUserState.checkBannedUser
+        authJwt.verifyToken,
+        authJwt.isUser,
+        verifyUserState.checkBannedUser
     ], emergencyControllers.createEmergency);
 
     // app.post("/api/emergency/audio", [
