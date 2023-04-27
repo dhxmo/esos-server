@@ -32,6 +32,7 @@ module.exports = function (app) {
         controller.ambulanceDriverRegister
     );
     app.post("/api/ambulance/login", [rateLimit], controller.ambulanceDriverLogIn);
+    app.post("/api/ambulance/change-availability", [rateLimit, authJwt.verifyToken, authJwt.isAmbulanceDriver], controller.changeAvailability);
 
     app.post("/api/user/send-otp", [rateLimit], controller.userSendOtp);
     app.post("/api/user/verify-otp", controller.userVerifyOtp);

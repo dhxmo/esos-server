@@ -1,5 +1,6 @@
 const db = require("../models");
 const Emergency = db.emergency;
+const DriverLive = db.driverLive;
 // const Recording = db.audioRecord;
 
 // const AWS = require('aws-sdk');
@@ -23,6 +24,7 @@ exports.getAllEmergencies = async (_, res) => {
 
 exports.createEmergency = async (req, res) => {
     try {
+        // create emergency call
         const request = await Emergency.create({
             location: {
                 type: 'Point',
@@ -33,11 +35,60 @@ exports.createEmergency = async (req, res) => {
             userId: req.id,
             userPhone: req.body.userPhone
         });
-        res.json({ data: request, status: "success" });
 
-        // await ambulanceSearchAndDeploy();
+        // find closest driver
+        const closestDriver = await findClosestDriver(Number(req.body.longitude), Number(req.body.latitude));
+
+
+        //  update driver availability
+        const driver = await DriverLive.findOneAndUpdate(
+            { driverPhone: closestDriver.driverPhone },
+            { availability: false }
+        );
+        await driver.save();
+
+        // - send push notification using firebase to get ready
+        //  - use google maps API to route fastest path b/w patient lat/long and ambulance driver's lat/long
+        // - update ambulance client with path and destination
+
+        res.json({ data: request, status: "success" });
     } catch (err) {
         res.json({ status: err });
+    }
+};
+
+//  this is crude and simplistic. optimize this thinking of edge cases later
+const findClosestDriver = async (long, lat) => {
+    try {
+        const closestDriver = await DriverLive.aggregate([
+            {
+                $geoNear: {
+                    near: {
+                        type: "Point",
+                        coordinates: [long, lat]
+                    },
+                    distanceField: 'distance',
+                    spherical: true,
+                    query: {
+                        availability: true
+                    },
+                    key: 'location'
+                },
+            },
+            {
+                $sort: {
+                    distance: 1
+                }
+            },
+            {
+                $limit: 1
+            },
+        ])
+
+        return closestDriver[0];
+    } catch (err) {
+        console.log(err);
+        throw err
     }
 };
 

@@ -2,6 +2,7 @@ const db = require("../models");
 const User = db.user;
 const Admin = db.admin;
 const AmbulanceDriver = db.ambulanceDriver;
+const DriverLive = db.driverLive;
 
 var jwt = require("jsonwebtoken");
 var bcrypt = require("bcryptjs");
@@ -124,6 +125,23 @@ exports.ambulanceDriverLogIn = async (req, res) => {
         res.status(500).send({ message: err });
     }
 };
+
+exports.changeAvailability = async (req, res) => {
+    const { phoneNumber } = req.body;
+    const driver = await DriverLive.findOne({ driverPhone: phoneNumber });
+
+    if (!driver) {
+        return res.status(404).json({ error: 'Driver not found' });
+    }
+
+    if (!driver.availability) {
+        driver.availability = true;
+        await DriverLive.save();
+        res.status(200).json({ message: 'Driver is now available' });
+    }
+
+    res.status(200).json({ message: 'Driver is already available' });
+}
 
 exports.userSendOtp = async (req, res) => {
     const { phoneNumber } = req.body;

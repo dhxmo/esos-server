@@ -25,9 +25,15 @@ module.exports = function (app, db) {
             try {
                 const { driverPhone, latitude, longitude } = JSON.parse(message);
 
+                // TODO: confirm this leaves the availability as is
                 await DriverLive.findOneAndUpdate(
                     { driverPhone },
-                    { location: { type: 'Point', coordinates: [longitude, latitude] } },
+                    {
+                        location: {
+                            type: 'Point',
+                            coordinates: [longitude, latitude]
+                        },
+                    },
                     { upsert: true }
                 );
 

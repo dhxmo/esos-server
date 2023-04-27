@@ -13,7 +13,7 @@ const DriverLive = mongoose.model('DriverLive', new mongoose.Schema({
             required: true
         }
     },
-    availability: Boolean,
+    availability: { type: Boolean, default: true },
     updatedAt: {
         type: Date,
         default: Date.now,
