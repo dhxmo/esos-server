@@ -18,9 +18,11 @@ module.exports = function (app) {
         "/api/admin/register",
         controller.adminRegister
     );
+
+    // TODO: modify rate limit to say that if the correct password, set the rate to 0 again
     app.post(
         "/api/admin/login",
-        [rateLimit],
+        // [rateLimit],
         controller.adminLogIn
     );
     app.post("/api/user/ban/:phoneNumber", [authJwt.verifyToken, authJwt.isAdmin], controller.adminBanUser);
@@ -36,6 +38,7 @@ module.exports = function (app) {
         controller.ambulanceDriverRegister
     );
     app.post("/api/ambulance/login", [rateLimit], controller.ambulanceDriverLogIn);
+    app.post("/api/ambulance/logout", controller.ambulanceLogout);
 
     app.post("/api/user/send-otp", [rateLimit], controller.userSendOtp);
     app.post("/api/user/verify-otp", controller.userVerifyOtp);

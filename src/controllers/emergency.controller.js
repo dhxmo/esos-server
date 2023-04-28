@@ -27,16 +27,11 @@ exports.getAllEmergencies = async (_, res) => {
 exports.createEmergency = async (req, res) => {
     const long = Number(req.body.longitude);
     const lat = Number(req.body.latitude);
-    console.log(long);
-    console.log(lat);
 
     try {
-        // find closest driver
+        // find closest driver and reserve for this call
         const closestDriver = await findClosestDriver(long, lat);
-        console.log(closestDriver);
-
         changeAvailability(closestDriver.driverPhone, false);
-        // console.log(driver);
 
         // create emergency call
         const request = await Emergency.create({
@@ -50,17 +45,9 @@ exports.createEmergency = async (req, res) => {
             userPhone: req.body.userPhone,
             assignedDriver: closestDriver.driverPhone
         });
-        console.log(request);
 
         // TODO: send socket notification to driver
-        // const ws = req.app.get('ws');
-        // console.log(ws);
-        // const driverSocket = Array.from(ws.clients).find((client) => {
-        //     // Find the WebSocket connection for the closest driver
-        //     return client.driverPhone === closestDriver.driverPhone;
-        // });
 
-        // console.log(driverSocket);
 
 
         //  - use google maps API to route fastest path b/w patient lat/long and ambulance driver's lat/long

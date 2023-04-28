@@ -1,8 +1,12 @@
 const ws = require('ws');
 
+const jwt = require("jsonwebtoken");
 require('dotenv').config()
 const { PORT } = process.env;
 const { RateLimiterMemory } = require('rate-limiter-flexible');
+
+require('dotenv').config()
+const { JWT_SECRET } = process.env;
 
 // Create a rate limiter to limit the number of connections per IP address
 const limiter = new RateLimiterMemory({
@@ -19,39 +23,30 @@ module.exports = function (app, db) {
         path: '/websocket',
     });
 
-    wsServer.on('connection', (ws, req) => {
+    // TODO: add verification for valid ambulance driver client before this is logged
+    wsServer.on('connection', async (ws, req) => {
         console.log(`WebSocket connection established for client ${req.socket.remoteAddress}`);
 
         // When we receive GPS data from the client, update the driver's live location in the database
         ws.on('message', async (message) => {
             try {
                 const { driverPhone, latitude, longitude } = JSON.parse(message);
+                const driver = await AmbulanceDriver.findOne({ phoneNumber: driverPhone });
 
-                const driver = await AmbulanceDriver.find({ phoneNumber: driverPhone });
-                console.log(driver);
-                // if (!driver) {
-                //     throw new Error("Driver not registered")
-                // } else {
-                //     await DriverLive.findOneAndUpdate(
-                //         { driverPhone },
-                //         {
-                //             location: {
-                //                 type: 'Point',
-                //                 coordinates: [longitude, latitude]
-                //             },
-                //         },
-                //     );
+                if (!driver) {
+                    throw new Error("Driver not registered")
+                }
+                await DriverLive.findOneAndUpdate(
+                    { driverPhone },
+                    {
+                        location: {
+                            type: 'Point',
+                            coordinates: [longitude, latitude]
+                        },
+                    },
+                );
 
-                //     console.log(`Live location updated for driver ${driverPhone}`);
-
-                // }
-                // driver.location = {
-                //     type: 'Point',
-                //     coordinates: [longitude, latitude]
-                // }
-                // await driver.save();
-
-
+                console.log(`Live location updated for driver ${driverPhone}`);
             } catch (err) {
                 console.error(err);
 
@@ -92,7 +87,5 @@ module.exports = function (app, db) {
         console.error(`WebSocket server error: ${err}`);
     });
 
-    return {
-        server, wsServer
-    }
+    return server
 };

@@ -108,7 +108,11 @@ exports.ambulanceDriverRegister = async (req, res) => {
         //  create new driver live location entry
         const driverLive = new DriverLive({
             driverPhone: req.body.phoneNumber,
-            availability: false
+            availability: false,
+            location: {
+                type: 'Point',
+                coordinates: [0, 0]
+            }
         });
         await driverLive.save();
 
