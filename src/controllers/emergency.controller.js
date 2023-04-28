@@ -1,7 +1,10 @@
 const db = require("../models");
 const Emergency = db.emergency;
 const DriverLive = db.driverLive;
+const AmbulanceDriver = db.ambulanceDriver;
 // const Recording = db.audioRecord;
+
+const { admin } = require('../utils/firebase');
 
 // const AWS = require('aws-sdk');
 // const fetch = require('node-fetch');
@@ -22,12 +25,15 @@ exports.getAllEmergencies = async (_, res) => {
     }
 };
 
+const notification_options = {
+    priority: "high",
+    timeToLive: 60 * 60 * 24
+};
+
 exports.createEmergency = async (req, res) => {
     try {
         // find closest driver
         const closestDriver = await findClosestDriver(Number(req.body.longitude), Number(req.body.latitude));
-        console.log(closestDriver);
-
 
         //  update driver availability
         const driver = await DriverLive.findOneAndUpdate(
@@ -50,6 +56,9 @@ exports.createEmergency = async (req, res) => {
         });
 
         // - send push notification using firebase to get ready
+        await firebasePushNotification(closestDriver.driverPhone);
+
+
         //  - use google maps API to route fastest path b/w patient lat/long and ambulance driver's lat/long
         // - update ambulance client with path and destination
 
@@ -94,7 +103,44 @@ const findClosestDriver = async (long, lat) => {
     }
 };
 
+const firebasePushNotification = async (phoneNumber) => {
+    const messaging = admin.messaging();
 
+    const driverToken = await AmbulanceDriver.findOne({ phoneNumber })
+        .select('jwtToken')
+        .exec((err, driver) => {
+            if (err) {
+                console.error(err);
+                return;
+            }
+
+            if (!driver) {
+                console.log(`Driver with phone number ${phoneNumber} not found`);
+                return;
+            }
+
+            return driver.jwtToken;
+        });;
+
+    // Send the push notification to the driver's device
+    const payload = {
+        data: {
+            title: 'New Emergency Call',
+            body: 'Please get ready to serve the patient.',
+            click_action: 'OPEN_EMERGENCY_CALL'
+        },
+        token: driverToken
+    };
+
+    await messaging.send(payload)
+        .then((response) => {
+            // Response is a message ID string.
+            console.log('Successfully sent message:', response);
+        })
+        .catch((error) => {
+            console.log('Error sending message:', error);
+        });
+}
 
 // exports.uploadAudioToS3 = async (req, res) => {
 // const emergency_id = req.body.emergencyId;

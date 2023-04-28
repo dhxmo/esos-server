@@ -110,7 +110,7 @@ exports.ambulanceDriverRegister = async (req, res) => {
 
 exports.ambulanceDriverLogIn = async (req, res) => {
     try {
-        const ambulanceDriver = await AmbulanceDriver.findOne({ phoneNumber: `+91${req.body.phoneNumber}` });
+        let ambulanceDriver = await AmbulanceDriver.findOne({ phoneNumber: `+91${req.body.phoneNumber}` });
         if (!ambulanceDriver) {
             return res.status(404).send({ message: "Ambulance driver Not found." });
         }
@@ -120,7 +120,22 @@ exports.ambulanceDriverLogIn = async (req, res) => {
             return res.status(401).send({ message: "Invalid Password!" });
         }
 
-        createAndSendToken(req, res, ambulanceDriver);
+        const token = jwt.sign({ id: ambulanceDriver.id }, JWT_SECRET, { expiresIn: 86400 });
+        const authority = ambulanceDriver.role.toUpperCase();
+
+        ambulanceDriver = await AmbulanceDriver.findOneAndUpdate(
+            { phoneNumber: req.body.phoneNumber },
+            { jwtToken: token }
+        );
+        await ambulanceDriver.save();
+
+        req.session.token = token;
+
+        res.status(200).json({
+            message: "Logged in successfully",
+            token: token,
+            authority: authority
+        });
     } catch (err) {
         res.status(500).send({ message: err });
     }
@@ -175,7 +190,7 @@ exports.userVerifyOtp = async (req, res) => {
 
                     await user.save();
 
-                    createAndSendToken(req, res, user)
+                    createAndSendToken(req, res, user);
                 } catch (err) {
                     return res.json({ success: false });
                 }
