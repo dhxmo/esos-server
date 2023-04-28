@@ -28,11 +28,14 @@ module.exports = function (app) {
 
     app.post(
         "/api/ambulance/register",
-        [authJwt.verifyToken, authJwt.isAdmin, verifySignUp.checkAmbulanceDriverDuplicateNumber],
+        [
+            authJwt.verifyToken,
+            authJwt.isAdmin,
+            verifySignUp.checkAmbulanceDriverDuplicateNumber
+        ],
         controller.ambulanceDriverRegister
     );
     app.post("/api/ambulance/login", [rateLimit], controller.ambulanceDriverLogIn);
-    app.post("/api/ambulance/change-availability", [rateLimit, authJwt.verifyToken, authJwt.isAmbulanceDriver], controller.changeAvailability);
 
     app.post("/api/user/send-otp", [rateLimit], controller.userSendOtp);
     app.post("/api/user/verify-otp", controller.userVerifyOtp);

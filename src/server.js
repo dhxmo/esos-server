@@ -55,6 +55,6 @@ authRoutes(app);
 testRoutes(app);
 emergencyRoutes(app);
 
-const server = websocket(app, db);
+const { server, _ } = websocket(app, db);
 
 module.exports = server;

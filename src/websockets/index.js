@@ -12,6 +12,8 @@ const limiter = new RateLimiterMemory({
 
 module.exports = function (app, db) {
     const DriverLive = db.driverLive;
+    const AmbulanceDriver = db.ambulanceDriver;
+
     const wsServer = new ws.Server({
         noServer: true,
         path: '/websocket',
@@ -25,19 +27,31 @@ module.exports = function (app, db) {
             try {
                 const { driverPhone, latitude, longitude } = JSON.parse(message);
 
-                // TODO: confirm this leaves the availability as is
-                await DriverLive.findOneAndUpdate(
-                    { driverPhone },
-                    {
-                        location: {
-                            type: 'Point',
-                            coordinates: [longitude, latitude]
-                        },
-                    },
-                    { upsert: true }
-                );
+                const driver = await AmbulanceDriver.find({ phoneNumber: driverPhone });
+                console.log(driver);
+                // if (!driver) {
+                //     throw new Error("Driver not registered")
+                // } else {
+                //     await DriverLive.findOneAndUpdate(
+                //         { driverPhone },
+                //         {
+                //             location: {
+                //                 type: 'Point',
+                //                 coordinates: [longitude, latitude]
+                //             },
+                //         },
+                //     );
 
-                console.log(`Live location updated for driver ${driverPhone}`);
+                //     console.log(`Live location updated for driver ${driverPhone}`);
+
+                // }
+                // driver.location = {
+                //     type: 'Point',
+                //     coordinates: [longitude, latitude]
+                // }
+                // await driver.save();
+
+
             } catch (err) {
                 console.error(err);
 
@@ -78,5 +92,7 @@ module.exports = function (app, db) {
         console.error(`WebSocket server error: ${err}`);
     });
 
-    return server;
+    return {
+        server, wsServer
+    }
 };

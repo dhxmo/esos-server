@@ -11,10 +11,10 @@ module.exports = function (app) {
         next();
     });
 
-    app.post("/api/emergency/call", [
-        authJwt.verifyToken,
-        authJwt.isUser,
-        verifyUserState.checkBannedUser
+    app.post("/api/emergency/create", [
+        // authJwt.verifyToken,
+        // authJwt.isUser,
+        // verifyUserState.checkBannedUser
     ], emergencyControllers.createEmergency);
 
     // app.post("/api/emergency/audio", [

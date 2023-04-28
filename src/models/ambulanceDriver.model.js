@@ -7,7 +7,6 @@ const AmbulanceDriver = mongoose.model(
         password: { type: String, required: true },
         companyName: { type: String, required: true },
         ambulanceType: { type: String, required: true },
-        jwtToken: { type: String, unique: true },
         role: { type: String, default: 'ambulance_driver' },
     })
 );

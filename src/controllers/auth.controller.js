@@ -4,6 +4,8 @@ const Admin = db.admin;
 const AmbulanceDriver = db.ambulanceDriver;
 const DriverLive = db.driverLive;
 
+const { changeAvailability } = require("../utils/driverAvailability");
+
 var jwt = require("jsonwebtoken");
 var bcrypt = require("bcryptjs");
 
@@ -27,7 +29,7 @@ const createAndSendToken = async (req, res, user) => {
 
 exports.adminRegister = async (req, res) => {
     try {
-        const phoneNumber = `+91${req.body.phoneNumber}`;
+        const phoneNumber = req.body.phoneNumber;
 
         const admin = new Admin({
             phoneNumber: phoneNumber,
@@ -44,7 +46,7 @@ exports.adminRegister = async (req, res) => {
 
 exports.adminLogIn = async (req, res) => {
     try {
-        const admin = await Admin.findOne({ phoneNumber: `+91${req.body.phoneNumber}` });
+        const admin = await Admin.findOne({ phoneNumber: req.body.phoneNumber });
         if (!admin) {
             return res.status(404).send({ message: "Admin Not found." });
         }
@@ -61,7 +63,7 @@ exports.adminLogIn = async (req, res) => {
 
 exports.adminBanUser = async (req, res) => {
     try {
-        const filter = { phoneNumber: `+91${req.params.phoneNumber}` };
+        const filter = { phoneNumber: req.params.phoneNumber };
         const update = { banned: true };
         const result = await User.updateMany(filter, update);
 
@@ -77,7 +79,7 @@ exports.adminBanUser = async (req, res) => {
 
 exports.adminUnBanUser = async (req, res) => {
     try {
-        const filter = { phoneNumber: `+91${req.params.phoneNumber}` };
+        const filter = { phoneNumber: req.params.phoneNumber };
         const update = { banned: false };
         const result = await User.updateMany(filter, update);
 
@@ -93,14 +95,22 @@ exports.adminUnBanUser = async (req, res) => {
 
 exports.ambulanceDriverRegister = async (req, res) => {
     try {
+        // register driver
         const ambulanceDriver = new AmbulanceDriver({
-            phoneNumber: `+91${req.body.phoneNumber}`,
+            phoneNumber: req.body.phoneNumber,
             password: await bcrypt.hash(req.body.password, 15),
             companyName: req.body.companyName,
             ambulanceType: req.body.ambulanceType
         });
 
         await ambulanceDriver.save();
+
+        //  create new driver live location entry
+        const driverLive = new DriverLive({
+            driverPhone: req.body.phoneNumber,
+            availability: false
+        });
+        await driverLive.save();
 
         return res.send({ message: "Ambulance driver was registered successfully!" });
     } catch (err) {
@@ -110,7 +120,8 @@ exports.ambulanceDriverRegister = async (req, res) => {
 
 exports.ambulanceDriverLogIn = async (req, res) => {
     try {
-        let ambulanceDriver = await AmbulanceDriver.findOne({ phoneNumber: `+91${req.body.phoneNumber}` });
+        //  validate password
+        let ambulanceDriver = await AmbulanceDriver.findOne({ phoneNumber: req.body.phoneNumber });
         if (!ambulanceDriver) {
             return res.status(404).send({ message: "Ambulance driver Not found." });
         }
@@ -120,43 +131,26 @@ exports.ambulanceDriverLogIn = async (req, res) => {
             return res.status(401).send({ message: "Invalid Password!" });
         }
 
-        const token = jwt.sign({ id: ambulanceDriver.id }, JWT_SECRET, { expiresIn: 86400 });
-        const authority = ambulanceDriver.role.toUpperCase();
+        //  make driver available
+        changeAvailability(req.body.phoneNumber, true);
 
-        ambulanceDriver = await AmbulanceDriver.findOneAndUpdate(
-            { phoneNumber: req.body.phoneNumber },
-            { jwtToken: token }
-        );
-        await ambulanceDriver.save();
-
-        req.session.token = token;
-
-        res.status(200).json({
-            message: "Logged in successfully",
-            token: token,
-            authority: authority
-        });
+        //  give jwt
+        createAndSendToken(req, res, ambulanceDriver)
     } catch (err) {
         res.status(500).send({ message: err });
     }
 };
 
-exports.changeAvailability = async (req, res) => {
-    const { phoneNumber } = req.body;
-    const driver = await DriverLive.findOne({ driverPhone: phoneNumber });
+exports.ambulanceLogout = async (req, res) => {
+    try {
+        changeAvailability(req.body.phoneNumber, false);
 
-    if (!driver) {
-        return res.status(404).json({ error: 'Driver not found' });
+        req.session = null;
+        return res.status(200).send({ message: "You've been signed out!" });
+    } catch (err) {
+        this.next(err);
     }
-
-    if (!driver.availability) {
-        driver.availability = true;
-        await DriverLive.save();
-        res.status(200).json({ message: 'Driver is now available' });
-    }
-
-    res.status(200).json({ message: 'Driver is already available' });
-}
+};
 
 exports.userSendOtp = async (req, res) => {
     const { phoneNumber } = req.body;

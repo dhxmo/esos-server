@@ -3,8 +3,7 @@ const Emergency = db.emergency;
 const DriverLive = db.driverLive;
 const AmbulanceDriver = db.ambulanceDriver;
 // const Recording = db.audioRecord;
-
-const { admin } = require('../utils/firebase');
+const { changeAvailability } = require("../utils/driverAvailability");
 
 // const AWS = require('aws-sdk');
 // const fetch = require('node-fetch');
@@ -25,38 +24,43 @@ exports.getAllEmergencies = async (_, res) => {
     }
 };
 
-const notification_options = {
-    priority: "high",
-    timeToLive: 60 * 60 * 24
-};
-
 exports.createEmergency = async (req, res) => {
+    const long = Number(req.body.longitude);
+    const lat = Number(req.body.latitude);
+    console.log(long);
+    console.log(lat);
+
     try {
         // find closest driver
-        const closestDriver = await findClosestDriver(Number(req.body.longitude), Number(req.body.latitude));
+        const closestDriver = await findClosestDriver(long, lat);
+        console.log(closestDriver);
 
-        //  update driver availability
-        const driver = await DriverLive.findOneAndUpdate(
-            { driverPhone: closestDriver.driverPhone },
-            { availability: false }
-        );
-        await driver.save();
+        changeAvailability(closestDriver.driverPhone, false);
+        // console.log(driver);
 
         // create emergency call
         const request = await Emergency.create({
             location: {
                 type: 'Point',
-                coordinates: [req.body.longitude, req.body.latitude]
+                coordinates: [long, lat]
             },
             selected: req.body.selected,
             emergency: req.body.emergency,
-            userId: req.id,
+            // userId: req.id,
             userPhone: req.body.userPhone,
             assignedDriver: closestDriver.driverPhone
         });
+        console.log(request);
 
-        // - send push notification using firebase to get ready
-        await firebasePushNotification(closestDriver.driverPhone);
+        // TODO: send socket notification to driver
+        // const ws = req.app.get('ws');
+        // console.log(ws);
+        // const driverSocket = Array.from(ws.clients).find((client) => {
+        //     // Find the WebSocket connection for the closest driver
+        //     return client.driverPhone === closestDriver.driverPhone;
+        // });
+
+        // console.log(driverSocket);
 
 
         //  - use google maps API to route fastest path b/w patient lat/long and ambulance driver's lat/long
@@ -95,52 +99,12 @@ const findClosestDriver = async (long, lat) => {
                 $limit: 1
             },
         ])
-
         return closestDriver[0];
     } catch (err) {
         console.log(err);
         throw err
     }
 };
-
-const firebasePushNotification = async (phoneNumber) => {
-    const messaging = admin.messaging();
-
-    const driverToken = await AmbulanceDriver.findOne({ phoneNumber })
-        .select('jwtToken')
-        .exec((err, driver) => {
-            if (err) {
-                console.error(err);
-                return;
-            }
-
-            if (!driver) {
-                console.log(`Driver with phone number ${phoneNumber} not found`);
-                return;
-            }
-
-            return driver.jwtToken;
-        });;
-
-    // Send the push notification to the driver's device
-    const payload = {
-        data: {
-            title: 'New Emergency Call',
-            body: 'Please get ready to serve the patient.',
-            click_action: 'OPEN_EMERGENCY_CALL'
-        },
-        token: driverToken
-    };
-
-    await messaging.send(payload)
-        .then((response) => {
-            // Response is a message ID string.
-            console.log('Successfully sent message:', response);
-        })
-        .catch((error) => {
-            console.log('Error sending message:', error);
-        });
-}
 
 // exports.uploadAudioToS3 = async (req, res) => {
 // const emergency_id = req.body.emergencyId;
