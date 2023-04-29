@@ -12,9 +12,9 @@ module.exports = function (app) {
     });
 
     app.post("/api/emergency/create", [
-        // authJwt.verifyToken,
-        // authJwt.isUser,
-        // verifyUserState.checkBannedUser
+        authJwt.verifyToken,
+        authJwt.isUser,
+        verifyUserState.checkBannedUser
     ], emergencyControllers.createEmergency);
 
     // app.post("/api/emergency/audio", [

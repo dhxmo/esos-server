@@ -34,7 +34,7 @@ exports.createEmergency = async (req, res) => {
     try {
         // find closest driver and reserve for this call
         const closestDriver = await findClosestDriver(long, lat);
-        // changeAvailability(closestDriver.driverPhone, false);
+        changeAvailability(closestDriver.driverPhone, false);
 
         // create emergency call
         const request = await Emergency.create({
@@ -44,7 +44,7 @@ exports.createEmergency = async (req, res) => {
             },
             selected: req.body.selected,
             emergency: req.body.emergency,
-            // userId: req.id,
+            userId: req.id,
             userPhone: req.body.userPhone,
             assignedDriver: closestDriver.driverPhone
         });
@@ -70,10 +70,6 @@ exports.createEmergency = async (req, res) => {
             driverSocket.send(JSON.stringify(notification));
             console.log(`Emergency alert sent to ambulance driver ${closestDriver.driverPhone}`);
         }
-
-
-        //  - use google maps API to route fastest path b/w patient lat/long and ambulance driver's lat/long
-        // - update ambulance client with path and destination
 
         res.json({ data: request, status: "success" });
     } catch (err) {
@@ -115,31 +111,31 @@ const findClosestDriver = async (long, lat) => {
     }
 };
 
-const firebasePushNotification = async (phoneNumber) => {
-    const messaging = admin.messaging();
-    const driverToken = await AmbulanceDriver.findOne({ phoneNumber });
+// const firebasePushNotification = async (phoneNumber) => {
+//     const messaging = admin.messaging();
+//     const driverToken = await AmbulanceDriver.findOne({ phoneNumber });
 
-    // Send the push notification to the driver's device
-    const payload = {
-        data: {
-            title: 'New Emergency Call',
-            body: 'Please get ready to serve the patient.',
-            click_action: 'OPEN_EMERGENCY_CALL'
-        },
-        token: driverToken.jwtToken
-    };
-    console.log("pay", payload);
+//     // Send the push notification to the driver's device
+//     const payload = {
+//         data: {
+//             title: 'New Emergency Call',
+//             body: 'Please get ready to serve the patient.',
+//             click_action: 'OPEN_EMERGENCY_CALL'
+//         },
+//         token: driverToken.jwtToken
+//     };
+//     console.log("pay", payload);
 
-    await messaging.send(payload)
-        .then((response) => {
-            // Response is a message ID string.
-            console.log('Successfully sent message:', response);
-        })
-        .catch((error) => {
-            console.log('Error sending message:', error);
-        });
-    console.log("firebase push");
-}
+//     await messaging.send(payload)
+//         .then((response) => {
+//             // Response is a message ID string.
+//             console.log('Successfully sent message:', response);
+//         })
+//         .catch((error) => {
+//             console.log('Error sending message:', error);
+//         });
+//     console.log("firebase push");
+// }
 
 // exports.uploadAudioToS3 = async (req, res) => {
 // const emergency_id = req.body.emergencyId;

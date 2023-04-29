@@ -20,10 +20,10 @@ const Emergency = mongoose.model('EmergencyRequest', new mongoose.Schema({
         type: Boolean,
         require: true
     },
-    // userId: {
-    //     type: String,
-    //     required: true
-    // },
+    userId: {
+        type: String,
+        required: true
+    },
     userPhone: {
         type: String,
         required: true
