@@ -58,3 +58,6 @@ emergencyRoutes(app);
 const { websocketServer, _ } = server(app, db);
 
 module.exports = websocketServer;
+
+// TODO: clean state on logout
+// TODO: change environment variables from what they are in docker-compose 
