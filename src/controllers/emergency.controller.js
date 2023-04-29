@@ -34,7 +34,7 @@ exports.createEmergency = async (req, res) => {
     try {
         // find closest driver and reserve for this call
         const closestDriver = await findClosestDriver(long, lat);
-        changeAvailability(closestDriver.driverPhone, false);
+        // changeAvailability(closestDriver.driverPhone, false);
 
         // create emergency call
         const request = await Emergency.create({
@@ -51,25 +51,24 @@ exports.createEmergency = async (req, res) => {
 
         // TODO: test firebase notification send
         // send push notification using firebase to get ready
-        await firebasePushNotification(closestDriver.driverPhone);
+        // await firebasePushNotification(closestDriver.driverPhone);
 
-        // TODO: send socket notification to driver
         // Find the WebSocket connection for the assigned driver
         const notification = {
-            type: 'emergency_assigned',
+            type: 'EMERGENCY_ASSIGNED',
             data: {
                 requestId: request._id,
                 location: {
+                    longitude: long,
                     latitude: lat,
-                    longitude: long
                 }
             }
         };
 
         const driverSocket = driverConnections.get(closestDriver.driverPhone);
-        console.log(driverSocket);
         if (driverSocket) {
             driverSocket.send(JSON.stringify(notification));
+            console.log(`Emergency alert sent to ambulance driver ${closestDriver.driverPhone}`);
         }
 
 
@@ -118,22 +117,7 @@ const findClosestDriver = async (long, lat) => {
 
 const firebasePushNotification = async (phoneNumber) => {
     const messaging = admin.messaging();
-
-    const driverToken = await AmbulanceDriver.findOne({ phoneNumber })
-        .select(jwtToken)
-        .exec((err, driver) => {
-            if (err) {
-                console.error(err);
-                return;
-            }
-
-            if (!driver) {
-                console.log(`Driver with phone number ${phoneNumber} not found`);
-                return;
-            }
-
-            return driver.jwtToken;
-        });;
+    const driverToken = await AmbulanceDriver.findOne({ phoneNumber });
 
     // Send the push notification to the driver's device
     const payload = {
@@ -142,8 +126,9 @@ const firebasePushNotification = async (phoneNumber) => {
             body: 'Please get ready to serve the patient.',
             click_action: 'OPEN_EMERGENCY_CALL'
         },
-        token: driverToken
+        token: driverToken.jwtToken
     };
+    console.log("pay", payload);
 
     await messaging.send(payload)
         .then((response) => {
@@ -153,6 +138,7 @@ const firebasePushNotification = async (phoneNumber) => {
         .catch((error) => {
             console.log('Error sending message:', error);
         });
+    console.log("firebase push");
 }
 
 // exports.uploadAudioToS3 = async (req, res) => {
