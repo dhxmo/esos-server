@@ -17,7 +17,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"phoneNumber\": \"0000000000\",\n    \"password\": \"asdf\"\n}",
+							"raw": "{\n    \"phoneNumber\": \"0000000001\",\n    \"password\": \"asdf\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -46,7 +46,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"phoneNumber\": \"0000000000\",\n    \"password\": \"asdf\"\n}",
+							"raw": "{\n    \"phoneNumber\": \"0000000001\",\n    \"password\": \"asdf\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -299,13 +299,13 @@
 			"name": "emergency",
 			"item": [
 				{
-					"name": "Call Emergency",
+					"name": "Create Emergency",
 					"request": {
 						"method": "POST",
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"latitude\": \"10\",\n    \"longitude\": \"10\",\n    \"selected\": \"ALS\",\n    \"emergency\": true,\n    \"userPhone\": 7975547583\n}",
+							"raw": "{\n    \"latitude\": \"10.0215\",\n    \"longitude\": \"10.3546\",\n    \"selected\": \"ALS\",\n    \"emergency\": true,\n    \"userPhone\": 7975547583\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -313,7 +313,7 @@
 							}
 						},
 						"url": {
-							"raw": "localhost:8080/api/emergency/call",
+							"raw": "localhost:8080/api/emergency/create",
 							"host": [
 								"localhost"
 							],
@@ -321,7 +321,7 @@
 							"path": [
 								"api",
 								"emergency",
-								"call"
+								"create"
 							]
 						}
 					},
@@ -354,25 +354,6 @@
 								"api",
 								"emergency",
 								"audio"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "New Request",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "wss://localhost:8080/websocket",
-							"protocol": "wss",
-							"host": [
-								"localhost"
-							],
-							"port": "8080",
-							"path": [
-								"websocket"
 							]
 						}
 					},
@@ -419,7 +400,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"phoneNumber\": 0000000002,\n    \"password\": \"asdf\"\n}",
+							"raw": "{\n    \"phoneNumber\": \"0000000002\",\n    \"password\": \"asdf\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -446,25 +427,6 @@
 					"request": {
 						"method": "POST",
 						"header": [],
-						"url": {
-							"raw": "localhost:8080/api/logout",
-							"host": [
-								"localhost"
-							],
-							"port": "8080",
-							"path": [
-								"api",
-								"logout"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Make Available",
-					"request": {
-						"method": "POST",
-						"header": [],
 						"body": {
 							"mode": "raw",
 							"raw": "{\n    \"phoneNumber\": \"0000000002\"\n}",
@@ -475,7 +437,7 @@
 							}
 						},
 						"url": {
-							"raw": "localhost:8080/api/ambulance/change-availability",
+							"raw": "localhost:8080/api/ambulance/logout",
 							"host": [
 								"localhost"
 							],
@@ -483,7 +445,7 @@
 							"path": [
 								"api",
 								"ambulance",
-								"change-availability"
+								"logout"
 							]
 						}
 					},
