@@ -1,6 +1,6 @@
 const { verifySignUp } = require("../middleware");
 const controller = require("../controllers/auth.controller");
-const { authJwt, rateLimit } = require("../middleware");
+const { authJwt, rateLimitMiddleware, adminRateLimitMiddleware } = require("../middleware");
 
 module.exports = function (app) {
     app.use(function (_, res, next) {
@@ -19,10 +19,9 @@ module.exports = function (app) {
         controller.adminRegister
     );
 
-    // TODO: modify rate limit to say that if the correct password, set the rate to 0 again
     app.post(
         "/api/admin/login",
-        // [rateLimit],
+        [adminRateLimitMiddleware],
         controller.adminLogIn
     );
     app.post("/api/user/ban/:phoneNumber", [authJwt.verifyToken, authJwt.isAdmin], controller.adminBanUser);
@@ -37,9 +36,9 @@ module.exports = function (app) {
         ],
         controller.ambulanceDriverRegister
     );
-    app.post("/api/ambulance/login", [rateLimit], controller.ambulanceDriverLogIn);
+    app.post("/api/ambulance/login", [rateLimitMiddleware], controller.ambulanceDriverLogIn);
     app.post("/api/ambulance/logout", controller.ambulanceLogout);
 
-    app.post("/api/user/send-otp", [rateLimit], controller.userSendOtp);
+    app.post("/api/user/send-otp", [rateLimitMiddleware], controller.userSendOtp);
     app.post("/api/user/verify-otp", controller.userVerifyOtp);
 };

@@ -48,6 +48,7 @@ exports.createEmergency = async (req, res) => {
             assignedDriver: closestDriver.driverPhone
         });
 
+        // TODO: test firebase notification send
         // send push notification using firebase to get ready
         await firebasePushNotification(closestDriver.driverPhone);
 
