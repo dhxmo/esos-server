@@ -5,7 +5,7 @@ const cookieSession = require("cookie-session");
 const authRoutes = require('./routes/auth.routes');
 const testRoutes = require('./routes/user.routes');
 const emergencyRoutes = require("./routes/emergency.routes");
-const websocket = require('./websockets')
+const { server } = require('./websockets')
 
 require('dotenv').config()
 const { MONGODB_URI, COOKIE_SECRET } = process.env;
@@ -55,6 +55,6 @@ authRoutes(app);
 testRoutes(app);
 emergencyRoutes(app);
 
-const { server, _ } = websocket(app, db);
+const { websocketServer, _ } = server(app, db);
 
-module.exports = server;
+module.exports = websocketServer;

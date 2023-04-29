@@ -1,8 +1,11 @@
 const ws = require('ws');
+const jwt = require("jsonwebtoken");
 
+const { authJwt } = require("../middleware")
 require('dotenv').config()
-const { PORT } = process.env;
+const { PORT, JWT_SECRET, HASH_SECRET } = process.env;
 const { RateLimiterMemory } = require('rate-limiter-flexible');
+const { encrypt, decrypt } = require("../utils/encryptToken");
 
 // Create a rate limiter to limit the number of connections per IP address
 const limiter = new RateLimiterMemory({
@@ -10,7 +13,9 @@ const limiter = new RateLimiterMemory({
     duration: 1, // Per second
 });
 
-module.exports = function (app, db) {
+const driverConnections = new Map();
+
+const server = function (app, db) {
     const DriverLive = db.driverLive;
     const AmbulanceDriver = db.ambulanceDriver;
 
@@ -21,33 +26,62 @@ module.exports = function (app, db) {
 
     // TODO: add verification for valid ambulance driver client before this is logged
     wsServer.on('connection', async (ws, req) => {
+        const hash = req.url.split('=')[1];
+
+        if (!hash) {
+            ws.send(JSON.stringify({ message: 'Unauthorized' }));
+            ws.close();
+            return;
+        }
         console.log(`WebSocket connection established for client ${req.socket.remoteAddress}`);
 
         // When we receive GPS data from the client, update the driver's live location in the database
         ws.on('message', async (message) => {
+            // verify JWT token
+            const decodedHash = decrypt(hash);
+            const decodedToken = jwt.verify(decodedHash, JWT_SECRET);
+
+            // check if the user is an ambulance driver
             try {
-                const { driverPhone, latitude, longitude } = JSON.parse(message);
-                const driver = await AmbulanceDriver.findOne({ phoneNumber: driverPhone });
-
-                if (!driver) {
-                    throw new Error("Driver not registered")
+                const ambulanceDriver = await AmbulanceDriver.findById(decodedToken.id);
+                if (!ambulanceDriver) {
+                    ws.send(JSON.stringify({ message: 'Require Ambulance Role' }));
+                    ws.close();
+                    return;
                 }
-                await DriverLive.findOneAndUpdate(
-                    { driverPhone },
-                    {
-                        location: {
-                            type: 'Point',
-                            coordinates: [longitude, latitude]
-                        },
-                    },
-                );
 
-                console.log(`Live location updated for driver ${driverPhone}`);
-            } catch (err) {
+                // establish connection and store WebSocket connection for the driver
+                console.log(`WebSocket connection established for driver ${ambulanceDriver.phoneNumber}`);
+                driverConnections.set(ambulanceDriver.phoneNumber, ws);
+
+                const { driverPhone, latitude, longitude } = JSON.parse(message);
+
+                if (driverPhone == ambulanceDriver.phoneNumber) {
+                    const driver = await AmbulanceDriver.findOne({ phoneNumber: driverPhone });
+
+                    if (!driver) {
+                        throw new Error("Driver not registered")
+                    }
+                    await DriverLive.findOneAndUpdate(
+                        { driverPhone },
+                        {
+                            location: {
+                                type: 'Point',
+                                coordinates: [longitude, latitude]
+                            },
+                        },
+                    );
+
+                    console.log(`Live location updated for driver ${driverPhone}`);
+                } else {
+                    throw new Error("Only allowed to updated your own location")
+                }
+            }
+            catch (err) {
                 console.error(err);
 
                 // Send an error message to the client if JSON parsing fails
-                ws.send(JSON.stringify({ error: 'Invalid message format' }));
+                ws.send(JSON.stringify({ error: err }));
             }
         });
 
@@ -85,3 +119,5 @@ module.exports = function (app, db) {
 
     return server
 };
+
+module.exports = { driverConnections, server }

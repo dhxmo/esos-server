@@ -139,7 +139,23 @@ exports.ambulanceDriverLogIn = async (req, res) => {
         changeAvailability(req.body.phoneNumber, true);
 
         //  give jwt
-        createAndSendToken(req, res, ambulanceDriver)
+        // createAndSendToken(req, res, ambulanceDriver)
+        const token = jwt.sign({ id: ambulanceDriver.id }, JWT_SECRET, { expiresIn: 86400 });
+        const authority = ambulanceDriver.role.toUpperCase();
+
+        ambulanceDriver = await AmbulanceDriver.findOneAndUpdate(
+            { phoneNumber: req.body.phoneNumber },
+            { jwtToken: token }
+        );
+        await ambulanceDriver.save();
+
+        req.session.token = token;
+
+        res.status(200).json({
+            message: "Logged in successfully",
+            token: token,
+            authority: authority
+        });
     } catch (err) {
         res.status(500).send({ message: err });
     }

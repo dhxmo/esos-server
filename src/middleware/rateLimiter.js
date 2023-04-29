@@ -1,6 +1,7 @@
 const db = require("../models");
 const RateLimit = db.rateLimit;
 const Admin = db.admin;
+var bcrypt = require("bcryptjs");
 
 exports.rateLimitMiddleware = async (req, res, next) => {
     try {
@@ -41,10 +42,6 @@ exports.adminRateLimitMiddleware = async (req, res, next) => {
 
     const passwordIsValid = await bcrypt.compare(req.body.password, admin.password);
     if (!passwordIsValid) {
-        return res.status(401).send({ message: "Invalid Password!" });
-    }
-
-    if (!passwordIsValid) {
         try {
             const phoneNumber = req.body.phoneNumber;
             const rateLimit = await RateLimit.findOne({ phoneNumber });
@@ -77,5 +74,3 @@ exports.adminRateLimitMiddleware = async (req, res, next) => {
 
     next();
 }
-
-// module.exports = { rateLimitMiddleware, adminRateLimitMiddleware }

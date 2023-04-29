@@ -3,6 +3,7 @@ const Emergency = db.emergency;
 const DriverLive = db.driverLive;
 const AmbulanceDriver = db.ambulanceDriver;
 // const Recording = db.audioRecord;
+const { driverConnections } = require('../websockets')
 
 const { changeAvailability } = require("../utils/driverAvailability");
 const { admin } = require('../utils/firebase');
@@ -54,7 +55,22 @@ exports.createEmergency = async (req, res) => {
 
         // TODO: send socket notification to driver
         // Find the WebSocket connection for the assigned driver
+        const notification = {
+            type: 'emergency_assigned',
+            data: {
+                requestId: request._id,
+                location: {
+                    latitude: lat,
+                    longitude: long
+                }
+            }
+        };
 
+        const driverSocket = driverConnections.get(closestDriver.driverPhone);
+        console.log(driverSocket);
+        if (driverSocket) {
+            driverSocket.send(JSON.stringify(notification));
+        }
 
 
         //  - use google maps API to route fastest path b/w patient lat/long and ambulance driver's lat/long

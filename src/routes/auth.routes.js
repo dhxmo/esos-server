@@ -24,8 +24,14 @@ module.exports = function (app) {
         [adminRateLimitMiddleware],
         controller.adminLogIn
     );
-    app.post("/api/user/ban/:phoneNumber", [authJwt.verifyToken, authJwt.isAdmin], controller.adminBanUser);
-    app.post("/api/user/unban/:phoneNumber", [authJwt.verifyToken, authJwt.isAdmin], controller.adminUnBanUser);
+    app.post("/api/user/ban/:phoneNumber", [
+        authJwt.verifyToken,
+        authJwt.isAdmin
+    ], controller.adminBanUser);
+    app.post("/api/user/unban/:phoneNumber", [
+        authJwt.verifyToken,
+        authJwt.isAdmin
+    ], controller.adminUnBanUser);
 
     app.post(
         "/api/ambulance/register",

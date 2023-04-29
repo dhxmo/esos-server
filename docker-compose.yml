@@ -11,6 +11,9 @@ services:
   #     TWILIO_ACCOUNT_SID: "ACaa9d1226096e80c7ed5256edcc046cc0"
   #     TWILIO_AUTH_TOKEN: "36eb4f7092607adc01f382995d22b640"
   #     TWILIO_SERVICE_SID: "VA7afe259265faf97cbc7f1d27a03d093d"
+  #     AWS_S3_BUCKET: "esos-server-audio"
+  #     AWS_SECRET_ACCESS_KEY: "bi+R+clXLbN6rMVwzPO7ZAdwyUu7BfFON+WdjUSD"
+  #     AWS_ACCESS_ID: "AKIASPOGFRZQOCQUAMWJ"
   #   ports:
   #     - 8080:8080
   #   depends_on:
