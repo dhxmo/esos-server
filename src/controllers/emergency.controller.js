@@ -3,7 +3,9 @@ const Emergency = db.emergency;
 const DriverLive = db.driverLive;
 const AmbulanceDriver = db.ambulanceDriver;
 // const Recording = db.audioRecord;
+
 const { changeAvailability } = require("../utils/driverAvailability");
+const { admin } = require('../utils/firebase');
 
 // const AWS = require('aws-sdk');
 // const fetch = require('node-fetch');
@@ -46,7 +48,11 @@ exports.createEmergency = async (req, res) => {
             assignedDriver: closestDriver.driverPhone
         });
 
+        // send push notification using firebase to get ready
+        await firebasePushNotification(closestDriver.driverPhone);
+
         // TODO: send socket notification to driver
+        // Find the WebSocket connection for the assigned driver
 
 
 
@@ -92,6 +98,45 @@ const findClosestDriver = async (long, lat) => {
         throw err
     }
 };
+
+const firebasePushNotification = async (phoneNumber) => {
+    const messaging = admin.messaging();
+
+    const driverToken = await AmbulanceDriver.findOne({ phoneNumber })
+        .select(jwtToken)
+        .exec((err, driver) => {
+            if (err) {
+                console.error(err);
+                return;
+            }
+
+            if (!driver) {
+                console.log(`Driver with phone number ${phoneNumber} not found`);
+                return;
+            }
+
+            return driver.jwtToken;
+        });;
+
+    // Send the push notification to the driver's device
+    const payload = {
+        data: {
+            title: 'New Emergency Call',
+            body: 'Please get ready to serve the patient.',
+            click_action: 'OPEN_EMERGENCY_CALL'
+        },
+        token: driverToken
+    };
+
+    await messaging.send(payload)
+        .then((response) => {
+            // Response is a message ID string.
+            console.log('Successfully sent message:', response);
+        })
+        .catch((error) => {
+            console.log('Error sending message:', error);
+        });
+}
 
 // exports.uploadAudioToS3 = async (req, res) => {
 // const emergency_id = req.body.emergencyId;

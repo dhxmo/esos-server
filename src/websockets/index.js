@@ -1,12 +1,8 @@
 const ws = require('ws');
 
-const jwt = require("jsonwebtoken");
 require('dotenv').config()
 const { PORT } = process.env;
 const { RateLimiterMemory } = require('rate-limiter-flexible');
-
-require('dotenv').config()
-const { JWT_SECRET } = process.env;
 
 // Create a rate limiter to limit the number of connections per IP address
 const limiter = new RateLimiterMemory({
