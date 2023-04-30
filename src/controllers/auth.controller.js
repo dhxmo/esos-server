@@ -5,6 +5,8 @@ const AmbulanceDriver = db.ambulanceDriver;
 const DriverLive = db.driverLive;
 const Hospital = db.hospital;
 
+const { registerAdmin } = require("../services/auth.services");
+
 const { changeDriverAvailability, changeHospitalAvailability } = require("../utils/changeAvailability");
 
 var jwt = require("jsonwebtoken");
@@ -31,15 +33,11 @@ const createAndSendToken = async (req, res, user) => {
 exports.adminRegister = async (req, res) => {
     try {
         const phoneNumber = req.body.phoneNumber;
+        const password = req.body.password;
 
-        const admin = new Admin({
-            phoneNumber: phoneNumber,
-            password: await bcrypt.hash(req.body.password, 15),
-        });
+        const message = await registerAdmin(phoneNumber, password);
 
-        await admin.save();
-
-        return res.send({ message: "Admin was registered successfully!" });
+        return res.status(200).send({ message });
     } catch (err) {
         return res.status(500).send({ message: err });
     }
