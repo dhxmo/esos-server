@@ -17,6 +17,21 @@ module.exports = function (app) {
         verifyUserState.checkBannedUser
     ], emergencyControllers.createEmergency);
 
+    app.patch("/api/emergency/confirm-pick-up", [
+        authJwt.verifyToken,
+        authJwt.isAmbulanceDriver
+    ], emergencyControllers.confirmPatientPickUp);
+
+    app.patch("/api/emergency/resolved", [
+        authJwt.verifyToken,
+        authJwt.isAmbulanceDriver
+    ], emergencyControllers.resolveEmergency);
+
+    app.post("/api/emergency/available-hospitals", [
+        authJwt.verifyToken,
+        authJwt.isAmbulanceDriver
+    ], emergencyControllers.findClosestAvailableHospital);
+
     // app.post("/api/emergency/audio", [
     //     authJwt.verifyToken,
     //     authJwt.isUser,

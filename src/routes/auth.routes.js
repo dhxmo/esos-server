@@ -24,11 +24,11 @@ module.exports = function (app) {
         [adminRateLimitMiddleware],
         controller.adminLogIn
     );
-    app.post("/api/user/ban/:phoneNumber", [
+    app.patch("/api/user/ban/:phoneNumber", [
         authJwt.verifyToken,
         authJwt.isAdmin
     ], controller.adminBanUser);
-    app.post("/api/user/unban/:phoneNumber", [
+    app.patch("/api/user/unban/:phoneNumber", [
         authJwt.verifyToken,
         authJwt.isAdmin
     ], controller.adminUnBanUser);
@@ -47,4 +47,17 @@ module.exports = function (app) {
 
     app.post("/api/user/send-otp", [rateLimitMiddleware], controller.userSendOtp);
     app.post("/api/user/verify-otp", controller.userVerifyOtp);
+
+    app.post("/api/hospital/register", [
+        authJwt.verifyToken,
+        authJwt.isAdmin,
+        verifySignUp.checkHospitalDuplicateNumber
+    ], controller.createHospital);
+    app.post("/api/hospital/login", [rateLimitMiddleware], controller.hospitalLogIn);
+    app.patch("/api/hospital/change-availability", [
+        rateLimitMiddleware,
+        authJwt.verifyToken,
+        authJwt.isHospital
+    ], controller.hospitalChangeAvailability);
+
 };

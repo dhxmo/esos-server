@@ -1,6 +1,7 @@
 const db = require("../models");
 const User = db.user;
 const AmbulanceDriver = db.ambulanceDriver;
+const Hospital = db.Hospital;
 
 checkDuplicateNumber = async (req, res, next) => {
     try {
@@ -28,9 +29,22 @@ checkAmbulanceDriverDuplicateNumber = async (req, res, next) => {
     }
 };
 
+checkHospitalDuplicateNumber = async (req, res, next) => {
+    try {
+        const hospital = await Hsopital.findOne({ phoneNumber: req.body.phoneNumber });
+        if (hospital) {
+            res.status(400).send({ message: "Failed! Phone number is already in use!" });
+            return;
+        }
+        next();
+    } catch (err) {
+        res.status(500).send({ message: err });
+    }
+};
 const verifySignUp = {
     checkDuplicateNumber,
-    checkAmbulanceDriverDuplicateNumber
+    checkAmbulanceDriverDuplicateNumber,
+    checkHospitalDuplicateNumber
 };
 
 module.exports = verifySignUp;

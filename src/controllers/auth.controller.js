@@ -3,8 +3,9 @@ const User = db.user;
 const Admin = db.admin;
 const AmbulanceDriver = db.ambulanceDriver;
 const DriverLive = db.driverLive;
+const Hospital = db.hospital;
 
-const { changeAvailability } = require("../utils/driverAvailability");
+const { changeDriverAvailability, changeHospitalAvailability } = require("../utils/changeAvailability");
 
 var jwt = require("jsonwebtoken");
 var bcrypt = require("bcryptjs");
@@ -130,13 +131,13 @@ exports.ambulanceDriverLogIn = async (req, res) => {
             return res.status(404).send({ message: "Ambulance driver Not found." });
         }
 
-        const passwordIsValid = await bcrypt.compare(req.body.password, ambulanceDriver.password);
+        const passwordIsValid = bcrypt.compare(req.body.password, ambulanceDriver.password);
         if (!passwordIsValid) {
             return res.status(401).send({ message: "Invalid Password!" });
         }
 
         //  make driver available
-        changeAvailability(req.body.phoneNumber, true);
+        changeDriverAvailability(req.body.phoneNumber, true);
 
         //  give jwt
         // createAndSendToken(req, res, ambulanceDriver)
@@ -163,7 +164,7 @@ exports.ambulanceDriverLogIn = async (req, res) => {
 
 exports.ambulanceLogout = async (req, res) => {
     try {
-        changeAvailability(req.body.phoneNumber, false);
+        changeDriverAvailability(req.body.phoneNumber, false);
 
         req.session = null;
         return res.status(200).send({ message: "You've been signed out!" });
@@ -223,6 +224,70 @@ exports.userVerifyOtp = async (req, res) => {
         res.json({ success: false });
     }
 
+}
+
+exports.createHospital = async (req, res) => {
+    try {
+        // register driver
+        const hospital = new Hospital({
+            phoneNumber: req.body.phoneNumber,
+            password: await bcrypt.hash(req.body.password, 15),
+            location: {
+                type: 'Point',
+                coordinates: [req.body.longitude, req.body.latitude]
+            }
+        });
+
+        await hospital.save();
+
+        return res.send({ message: "Hospital was registered successfully!" });
+    } catch (err) {
+        return res.status(500).send({ message: err });
+    }
+};
+
+exports.hospitalLogIn = async (req, res) => {
+    try {
+        //  validate password
+        let hospital = await Hospital.findOne({ phoneNumber: req.body.phoneNumber });
+        if (!hospital) {
+            return res.status(404).send({ message: "Hospital Not found." });
+        }
+
+        const passwordIsValid = bcrypt.compare(req.body.password, hospital.password);
+        if (!passwordIsValid) {
+            return res.status(401).send({ message: "Invalid Password!" });
+        }
+
+        //  make hospital available
+        changeHospitalAvailability(req.body.phoneNumber, true);
+
+        //  give jwt
+        createAndSendToken(req, res, hospital)
+    } catch (err) {
+        res.status(500).send({ message: err });
+    }
+};
+
+exports.hospitalLogout = async (req, res) => {
+    try {
+        changeHospitalAvailability(req.body.phoneNumber, false);
+
+        req.session = null;
+        return res.status(200).send({ message: "You've been signed out!" });
+    } catch (err) {
+        this.next(err);
+    }
+};
+
+exports.hospitalChangeAvailability = async (req, res) => {
+    try {
+        changeHospitalAvailability(req.body.phoneNumber, false);
+
+        return res.status(200).json({ status: "success", data: "Hospital availability has been changed" });
+    } catch (err) {
+        res.status(404).json({ status: "failed", data: err });
+    }
 }
 
 exports.logout = async (req, res) => {

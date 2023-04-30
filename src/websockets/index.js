@@ -1,6 +1,7 @@
 const ws = require('ws');
 const jwt = require("jsonwebtoken");
 
+const crypto = require('crypto');
 const { authJwt } = require("../middleware")
 require('dotenv').config()
 const { PORT, JWT_SECRET, HASH_SECRET } = process.env;
@@ -24,7 +25,6 @@ const server = function (app, db) {
         path: '/websocket',
     });
 
-    // TODO: add verification for valid ambulance driver client before this is logged
     wsServer.on('connection', async (ws, req) => {
         const hash = req.url.split('=')[1];
 
@@ -34,6 +34,7 @@ const server = function (app, db) {
             return;
         }
         console.log(`WebSocket connection established for client ${req.socket.remoteAddress}`);
+
 
         // When we receive GPS data from the client, update the driver's live location in the database
         ws.on('message', async (message) => {

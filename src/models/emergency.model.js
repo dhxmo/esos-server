@@ -32,10 +32,27 @@ const Emergency = mongoose.model('EmergencyRequest', new mongoose.Schema({
         type: String,
         required: true
     },
+    pickUp: {
+        type: Boolean,
+        default: false
+    },
+    pickUpAt: {
+        type: Date
+    },
+    assignedHospital: {
+        type: String
+    },
+    resolved: {
+        type: Boolean,
+        default: false
+    },
     createdAt: {
         type: Date,
         default: Date.now,
     },
+    updatedAt: {
+        type: Date
+    }
 }).index({ location: '2dsphere' }));
 
 module.exports = Emergency 

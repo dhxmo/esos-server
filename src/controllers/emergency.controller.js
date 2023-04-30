@@ -1,12 +1,13 @@
 const db = require("../models");
 const Emergency = db.emergency;
 const DriverLive = db.driverLive;
-const AmbulanceDriver = db.ambulanceDriver;
+const Hospital = db.hospital;
+// const AmbulanceDriver = db.ambulanceDriver;
 // const Recording = db.audioRecord;
 const { driverConnections } = require('../websockets')
 
-const { changeAvailability } = require("../utils/driverAvailability");
-const { admin } = require('../utils/firebase');
+const { changeDriverAvailability } = require("../utils/changeAvailability");
+// const { admin } = require('../utils/firebase');
 
 // const AWS = require('aws-sdk');
 // const fetch = require('node-fetch');
@@ -34,7 +35,7 @@ exports.createEmergency = async (req, res) => {
     try {
         // find closest driver and reserve for this call
         const closestDriver = await findClosestDriver(long, lat);
-        changeAvailability(closestDriver.driverPhone, false);
+        changeDriverAvailability(closestDriver.driverPhone, false);
 
         // create emergency call
         const request = await Emergency.create({
@@ -61,7 +62,8 @@ exports.createEmergency = async (req, res) => {
                 location: {
                     longitude: long,
                     latitude: lat,
-                }
+                },
+                userPhone: userPhone
             }
         };
 
@@ -107,7 +109,7 @@ const findClosestDriver = async (long, lat) => {
         return closestDriver[0];
     } catch (err) {
         console.log(err);
-        throw err
+        throw new Error(err)
     }
 };
 
@@ -161,3 +163,73 @@ exports.getEmergencyById = async (req, res) => {
         res.json({ status: err });
     }
 };
+
+exports.resolveEmergency = async (req, res) => {
+    try {
+        const emergency = await Emergency.findById(req.body.reqId);
+
+        emergency.resolved = true;
+        emergency.updatedAt = Date.now();
+        await emergency.save()
+
+        res.json({ status: "success" });
+    } catch (err) {
+        res.json({ status: err });
+    }
+
+}
+
+exports.confirmPatientPickUp = async (req, res) => {
+    try {
+        const emergency = await Emergency.findById(req.body.reqId);
+
+        emergency.pickUp = true;
+        emergency.pickUpAt = Date.now();
+        await emergency.save()
+
+        res.json({ status: "success" });
+    } catch (err) {
+        res.json({ status: err });
+    }
+}
+
+//TODO: this is crude and simplistic. make this such that it collates real time traffic data
+//  and finds the hospital which can be reached in the least time 
+exports.findClosestAvailableHospital = async (req, res) => {
+    const { reqId, longitude, latitude } = req.body;
+    try {
+        const closestHospital = await Hospital.aggregate([
+            {
+                $geoNear: {
+                    near: {
+                        type: "Point",
+                        coordinates: [Number(longitude), Number(latitude)]
+                    },
+                    distanceField: 'distance',
+                    spherical: true,
+                    query: {
+                        availability: true
+                    },
+                    key: 'location'
+                },
+            },
+            {
+                $sort: {
+                    distance: 1
+                }
+            },
+            {
+                $limit: 1
+            },
+        ])
+        const assignedHospital = closestHospital[0];
+
+        const emergency = await Emergency.findById(reqId);
+        emergency.assignedHospital = assignedHospital._id;
+        await emergency.save();
+
+        res.json({ status: "success", data: assignedHospital.location });
+    } catch (err) {
+        res.json({ status: err });
+    }
+}

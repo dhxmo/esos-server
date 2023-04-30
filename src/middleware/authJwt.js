@@ -3,6 +3,7 @@ const db = require("../models");
 const User = db.user;
 const Admin = db.admin;
 const AmbulanceDriver = db.ambulanceDriver;
+const Hospital = db.hospital;
 
 require('dotenv').config()
 const { JWT_SECRET } = process.env;
@@ -62,10 +63,24 @@ isUser = async (req, res, next) => {
     }
 };
 
+isHospital = async (req, res, next) => {
+    try {
+        const hospital = await Hospital.findById(req.id);
+        if (!hospital) {
+            res.status(403).send({ message: "Require Hospital Role!" });
+            return;
+        }
+        next();
+    } catch (err) {
+        res.status(500).send({ message: err });
+    }
+}
+
 const authJwt = {
     verifyToken,
     isAdmin,
     isAmbulanceDriver,
-    isUser
+    isUser,
+    isHospital
 };
 module.exports = authJwt;
