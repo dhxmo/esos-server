@@ -1,12 +1,12 @@
-const db = require("../models");
+const db = require('../models');
 const Emergency = db.emergency;
 const DriverLive = db.driverLive;
 const Hospital = db.hospital;
 // const AmbulanceDriver = db.ambulanceDriver;
 // const Recording = db.audioRecord;
-const { driverConnections } = require('../websockets')
+const { driverConnections } = require('../websockets');
 
-const { changeDriverAvailability } = require("../utils/changeAvailability");
+const { changeDriverAvailability } = require('../utils/changeAvailability');
 // const { admin } = require('../utils/firebase');
 
 // const AWS = require('aws-sdk');
@@ -19,100 +19,97 @@ const { changeDriverAvailability } = require("../utils/changeAvailability");
 //     secretAccessKey: AWS_SECRET_ACCESS_KEY,
 // })
 
-exports.getAllEmergencies = async (_, res) => {
-    try {
-        const requests = await Emergency.find();
-        res.json({ data: requests, status: "success" });
-    } catch (err) {
-        res.status(500).json({ error: err.message });
-    }
-};
-
 exports.createEmergency = async (req, res) => {
-    const long = Number(req.body.longitude);
-    const lat = Number(req.body.latitude);
+  const long = Number(req.body.longitude);
+  const lat = Number(req.body.latitude);
 
-    try {
-        // find closest driver and reserve for this call
-        const closestDriver = await findClosestDriver(req.body.selectedAmbulanceType, long, lat);
-        changeDriverAvailability(closestDriver.driverPhone, false);
+  try {
+    // find closest driver and reserve for this call
+    const closestDriver = await findClosestDriver(
+      req.body.selectedAmbulanceType,
+      long,
+      lat
+    );
+    changeDriverAvailability(closestDriver.driverPhone, false);
 
-        // create emergency call
-        const request = await Emergency.create({
-            location: {
-                type: 'Point',
-                coordinates: [long, lat]
-            },
-            selectedAmbulanceType: req.body.selectedAmbulanceType,
-            emergency: req.body.emergency,
-            userId: req.id,
-            userPhone: req.body.userPhone,
-            assignedDriver: closestDriver.driverPhone
-        });
+    // create emergency call
+    const request = await Emergency.create({
+      location: {
+        type: 'Point',
+        coordinates: [long, lat],
+      },
+      selectedAmbulanceType: req.body.selectedAmbulanceType,
+      emergency: req.body.emergency,
+      userId: req.id,
+      userPhone: req.body.userPhone,
+      assignedDriver: closestDriver.driverPhone,
+    });
 
-        // TODO: test firebase notification send
-        // send push notification using firebase to get ready
-        // await firebasePushNotification(closestDriver.driverPhone);
+    // TODO: test firebase notification send
+    // send push notification using firebase to get ready
+    // await firebasePushNotification(closestDriver.driverPhone);
 
-        // Find the WebSocket connection for the assigned driver
-        const notification = {
-            type: 'EMERGENCY_ASSIGNED',
-            data: {
-                requestId: request._id,
-                location: {
-                    longitude: long,
-                    latitude: lat,
-                },
-                userPhone: userPhone
-            }
-        };
+    // Find the WebSocket connection for the assigned driver
+    const notification = {
+      type: 'EMERGENCY_ASSIGNED',
+      data: {
+        requestId: request._id,
+        location: {
+          longitude: long,
+          latitude: lat,
+        },
+        userPhone: userPhone,
+      },
+    };
 
-        const driverSocket = driverConnections.get(closestDriver.driverPhone);
-        if (driverSocket) {
-            driverSocket.send(JSON.stringify(notification));
-            console.log(`Emergency alert sent to ambulance driver ${closestDriver.driverPhone}`);
-        }
-
-        res.json({ data: request, status: "success" });
-    } catch (err) {
-        res.json({ status: err });
+    const driverSocket = driverConnections.get(closestDriver.driverPhone);
+    if (driverSocket) {
+      driverSocket.send(JSON.stringify(notification));
+      console.log(
+        `Emergency alert sent to ambulance driver ${closestDriver.driverPhone}`
+      );
     }
+
+    res.json({ data: request, status: 'success' });
+  } catch (err) {
+    res.json({ status: err });
+  }
 };
 
 //  this is crude and simplistic. optimize this thinking of edge cases later
 const findClosestDriver = async (ambulanceType, long, lat) => {
-    try {
-        const closestDriver = await DriverLive.aggregate([
-            {
-                $geoNear: {
-                    near: {
-                        type: "Point",
-                        coordinates: [long, lat]
-                    },
-                    distanceField: 'distance',
-                    spherical: true,
-                    query: {
-                        availability: true,
-                        ambulanceType: ambulanceType,
-                    },
-                    key: 'location'
-                },
-            },
-            {
-                $sort: {
-                    distance: 1
-                }
-            },
-            {
-                $limit: 1
-            },
-        ])
-        console.log(closestDriver[0]);
-        return closestDriver[0];
-    } catch (err) {
-        console.log(err);
-        throw new Error(err)
-    }
+  try {
+    const closestDriver = await DriverLive.aggregate([
+      {
+        $geoNear: {
+          near: {
+            type: 'Point',
+            coordinates: [long, lat],
+          },
+          distanceField: 'distance',
+          spherical: true,
+          query: {
+            availability: true,
+            ambulanceType: ambulanceType,
+          },
+          key: 'location',
+        },
+      },
+      {
+        $sort: {
+          distance: 1,
+        },
+      },
+      {
+        $limit: 1,
+      },
+    ]);
+    console.log(closestDriver[0]);
+    return closestDriver[0];
+  } catch (err) {
+    console.log(err);
+    throw new Error(err);
+  }
 };
 
 // const firebasePushNotification = async (phoneNumber) => {
@@ -158,85 +155,90 @@ const findClosestDriver = async (ambulanceType, long, lat) => {
 // }
 
 exports.getEmergencyById = async (req, res) => {
-    try {
-        const request = await Emergency.findById(req.params.id);
-        res.json({ data: request, status: "success" });
-    } catch (err) {
-        res.json({ status: err });
-    }
+  try {
+    const request = await Emergency.findById(req.params.id);
+    res.status(200).json({ status: 'success', message: request });
+  } catch (err) {
+    res.status(500).json({ status: 'failed', message: err });
+  }
+};
+exports.getAllEmergencies = async (_, res) => {
+  try {
+    const requests = await Emergency.find();
+    res.status(200).json({ status: 'success', message: requests });
+  } catch (err) {
+    res.status(500).json({ status: 'failed', message: err });
+  }
 };
 
 exports.resolveEmergency = async (req, res) => {
-    try {
-        const emergency = await Emergency.findById(req.body.reqId);
+  try {
+    const emergency = await Emergency.findById(req.body.reqId);
 
-        emergency.resolved = true;
-        emergency.updatedAt = Date.now();
-        await emergency.save()
+    emergency.resolved = true;
+    emergency.updatedAt = Date.now();
+    await emergency.save();
 
-        res.json({ status: "success" });
-    } catch (err) {
-        res.json({ status: err });
-    }
-
-}
+    res.json({ status: 'success' });
+  } catch (err) {
+    res.json({ status: err });
+  }
+};
 
 exports.confirmPatientPickUp = async (req, res) => {
-    try {
-        const emergency = await Emergency.findById(req.body.reqId);
+  try {
+    const emergency = await Emergency.findById(req.body.reqId);
 
-        emergency.pickUp = true;
-        emergency.pickUpAt = Date.now();
-        await emergency.save()
+    emergency.pickUp = true;
+    emergency.pickUpAt = Date.now();
+    await emergency.save();
 
-        res.json({ status: "success" });
-    } catch (err) {
-        res.json({ status: err });
-    }
-}
+    res.json({ status: 'success' });
+  } catch (err) {
+    res.json({ status: err });
+  }
+};
 
 //TODO: this is crude and simplistic. make this such that it collates real time traffic data
-//  and finds the hospital which can be reached in the least time 
+//  and finds the hospital which can be reached in the least time
 exports.findClosestAvailableHospital = async (req, res) => {
-    const { reqId, longitude, latitude } = req.body;
-    try {
-        const closestHospital = await Hospital.aggregate([
-            {
-                $geoNear: {
-                    near: {
-                        type: "Point",
-                        coordinates: [Number(longitude), Number(latitude)]
-                    },
-                    distanceField: 'distance',
-                    spherical: true,
-                    query: {
-                        availability: true
-                    },
-                    key: 'location'
-                },
-            },
-            {
-                $sort: {
-                    distance: 1
-                }
-            },
-            {
-                $limit: 1
-            },
-        ])
-        const assignedHospital = closestHospital[0];
+  const { reqId, longitude, latitude } = req.body;
+  try {
+    const closestHospital = await Hospital.aggregate([
+      {
+        $geoNear: {
+          near: {
+            type: 'Point',
+            coordinates: [Number(longitude), Number(latitude)],
+          },
+          distanceField: 'distance',
+          spherical: true,
+          query: {
+            availability: true,
+          },
+          key: 'location',
+        },
+      },
+      {
+        $sort: {
+          distance: 1,
+        },
+      },
+      {
+        $limit: 1,
+      },
+    ]);
+    const assignedHospital = closestHospital[0];
 
-        const emergency = await Emergency.findById(reqId);
-        emergency.assignedHospital = assignedHospital._id;
-        await emergency.save();
+    const emergency = await Emergency.findById(reqId);
+    emergency.assignedHospital = assignedHospital._id;
+    await emergency.save();
 
-        res.json({ status: "success", data: assignedHospital.location });
-    } catch (err) {
-        res.json({ status: err });
-    }
-}
+    res.json({ status: 'success', data: assignedHospital.location });
+  } catch (err) {
+    res.json({ status: err });
+  }
+};
 
 //  function to allow a hospital to see it's own inbound emergencies
-exports.seeActiveEmergencies = async (req, res) => {
-
-}
+exports.seeActiveEmergencies = async (req, res) => {};

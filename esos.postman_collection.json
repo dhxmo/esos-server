@@ -1,542 +1,419 @@
 {
-	"info": {
-		"_postman_id": "37f94eeb-5753-4252-8585-5bc3157ca98e",
-		"name": "esos",
-		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"_exporter_id": "16450904",
-		"_collection_link": "https://blue-meteor-763804.postman.co/workspace/new-newness~9003bac6-248d-4922-b9fc-0ea37a131f33/collection/16450904-37f94eeb-5753-4252-8585-5bc3157ca98e?action=share&creator=16450904&source=collection_link"
-	},
-	"item": [
-		{
-			"name": "Admin",
-			"item": [
-				{
-					"name": "admin register",
-					"request": {
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n    \"phoneNumber\": \"0000000001\",\n    \"password\": \"asdf\"\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "localhost:8080/api/admin/register",
-							"host": [
-								"localhost"
-							],
-							"port": "8080",
-							"path": [
-								"api",
-								"admin",
-								"register"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "admin login",
-					"request": {
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n    \"phoneNumber\": \"0000000001\",\n    \"password\": \"asdf\"\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "localhost:8080/api/admin/login",
-							"host": [
-								"localhost"
-							],
-							"port": "8080",
-							"path": [
-								"api",
-								"admin",
-								"login"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Ban user",
-					"request": {
-						"method": "POST",
-						"header": [],
-						"url": {
-							"raw": "localhost:8080/api/user/ban/7975547583",
-							"host": [
-								"localhost"
-							],
-							"port": "8080",
-							"path": [
-								"api",
-								"user",
-								"ban",
-								"7975547583"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Logout",
-					"request": {
-						"method": "POST",
-						"header": [],
-						"url": {
-							"raw": "localhost:8080/api/logout",
-							"host": [
-								"localhost"
-							],
-							"port": "8080",
-							"path": [
-								"api",
-								"logout"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Get Users",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "localhost:8080/api/users/",
-							"host": [
-								"localhost"
-							],
-							"port": "8080",
-							"path": [
-								"api",
-								"users",
-								""
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Get User By ID",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "localhost:8080/api/users/get-user-by-id/6440a1f02b206081043ec274",
-							"host": [
-								"localhost"
-							],
-							"port": "8080",
-							"path": [
-								"api",
-								"users",
-								"get-user-by-id",
-								"6440a1f02b206081043ec274"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Get All Emergencies",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "localhost:8080/api/emergency/get-all",
-							"host": [
-								"localhost"
-							],
-							"port": "8080",
-							"path": [
-								"api",
-								"emergency",
-								"get-all"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Get Emergency by ID",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "localhost:8080/api/emergency/get/643e438c4c65a87a5f731a72",
-							"host": [
-								"localhost"
-							],
-							"port": "8080",
-							"path": [
-								"api",
-								"emergency",
-								"get",
-								"643e438c4c65a87a5f731a72"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Un-Ban users",
-					"request": {
-						"method": "POST",
-						"header": [],
-						"url": {
-							"raw": "localhost:8080/api/user/unban/7975547583",
-							"host": [
-								"localhost"
-							],
-							"port": "8080",
-							"path": [
-								"api",
-								"user",
-								"unban",
-								"7975547583"
-							]
-						}
-					},
-					"response": []
-				}
-			]
-		},
-		{
-			"name": "User",
-			"item": [
-				{
-					"name": "Send-OTP",
-					"request": {
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n    \"phoneNumber\": 7975547583\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "localhost:8080/api/user/send-otp",
-							"host": [
-								"localhost"
-							],
-							"port": "8080",
-							"path": [
-								"api",
-								"user",
-								"send-otp"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Verify-OTP",
-					"request": {
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n    \"phoneNumber\": 7975547583,\n    \"otp\": 609100\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "localhost:8080/api/user/verify-otp",
-							"host": [
-								"localhost"
-							],
-							"port": "8080",
-							"path": [
-								"api",
-								"user",
-								"verify-otp"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Logout",
-					"request": {
-						"method": "POST",
-						"header": [],
-						"url": {
-							"raw": "localhost:8080/api/logout",
-							"host": [
-								"localhost"
-							],
-							"port": "8080",
-							"path": [
-								"api",
-								"logout"
-							]
-						}
-					},
-					"response": []
-				}
-			]
-		},
-		{
-			"name": "emergency",
-			"item": [
-				{
-					"name": "Create Emergency",
-					"request": {
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n    \"latitude\": \"10.0215\",\n    \"longitude\": \"10.3546\",\n    \"selected\": \"ALS\",\n    \"emergency\": true,\n    \"userPhone\": 7975547583\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "localhost:8080/api/emergency/create",
-							"host": [
-								"localhost"
-							],
-							"port": "8080",
-							"path": [
-								"api",
-								"emergency",
-								"create"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "New Request",
-					"protocolProfileBehavior": {
-						"disableBodyPruning": true
-					},
-					"request": {
-						"method": "GET",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n    \"emergencyId\": \"123\",\n    \"fileUrl\": \"file:///data/user/0/host.exp.exponent/cache/ExperienceData/%2540dhxmo%252Fesos-client/Audio/recording-3c5359a2-1f70-4ccb-ad47-7abb98a00dd4.3gp\"\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "localhost:8080/api/emergency/audio",
-							"host": [
-								"localhost"
-							],
-							"port": "8080",
-							"path": [
-								"api",
-								"emergency",
-								"audio"
-							]
-						}
-					},
-					"response": []
-				}
-			]
-		},
-		{
-			"name": "Ambulance",
-			"item": [
-				{
-					"name": "Register",
-					"request": {
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n    \"phoneNumber\": \"0000000002\",\n    \"password\": \"asdf\",\n    \"companyName\": \"ABC Company\",\n    \"ambulanceType\": \"ALS\"\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "localhost:8080/api/ambulance/register",
-							"host": [
-								"localhost"
-							],
-							"port": "8080",
-							"path": [
-								"api",
-								"ambulance",
-								"register"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Login",
-					"request": {
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n    \"phoneNumber\": \"0000000002\",\n    \"password\": \"asdf\"\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "localhost:8080/api/ambulance/login",
-							"host": [
-								"localhost"
-							],
-							"port": "8080",
-							"path": [
-								"api",
-								"ambulance",
-								"login"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Logout",
-					"request": {
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n    \"phoneNumber\": \"0000000002\"\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "localhost:8080/api/ambulance/logout",
-							"host": [
-								"localhost"
-							],
-							"port": "8080",
-							"path": [
-								"api",
-								"ambulance",
-								"logout"
-							]
-						}
-					},
-					"response": []
-				}
-			]
-		},
-		{
-			"name": "Content",
-			"item": [
-				{
-					"name": "all",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "localhost:8080/api/test/all",
-							"host": [
-								"localhost"
-							],
-							"port": "8080",
-							"path": [
-								"api",
-								"test",
-								"all"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "user",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "localhost:8080/api/test/user",
-							"host": [
-								"localhost"
-							],
-							"port": "8080",
-							"path": [
-								"api",
-								"test",
-								"user"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "ambulance",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "localhost:8080/api/test/ambulance",
-							"host": [
-								"localhost"
-							],
-							"port": "8080",
-							"path": [
-								"api",
-								"test",
-								"ambulance"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "admin",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "localhost:8080/api/test/admin",
-							"host": [
-								"localhost"
-							],
-							"port": "8080",
-							"path": [
-								"api",
-								"test",
-								"admin"
-							]
-						}
-					},
-					"response": []
-				}
-			]
-		}
-	]
+  "info": {
+    "_postman_id": "37f94eeb-5753-4252-8585-5bc3157ca98e",
+    "name": "esos",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "16450904",
+    "_collection_link": "https://blue-meteor-763804.postman.co/workspace/new-newness~9003bac6-248d-4922-b9fc-0ea37a131f33/collection/16450904-37f94eeb-5753-4252-8585-5bc3157ca98e?action=share&creator=16450904&source=collection_link"
+  },
+  "item": [
+    {
+      "name": "Admin",
+      "item": [
+        {
+          "name": "admin register",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"phoneNumber\": \"0000000001\",\n    \"password\": \"asdf\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "localhost:8080/api/admin/register",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["api", "admin", "register"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "admin login",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"phoneNumber\": \"0000000001\",\n    \"password\": \"asdf\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "localhost:8080/api/admin/login",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["api", "admin", "login"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Ban user",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "localhost:8080/api/user/ban/7975547583",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["api", "user", "ban", "7975547583"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "localhost:8080/api/logout",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["api", "logout"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Users",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "localhost:8080/api/users/",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["api", "users", ""]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get User By ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "localhost:8080/api/users/get-user-by-id/6440a1f02b206081043ec274",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": [
+                "api",
+                "users",
+                "get-user-by-id",
+                "6440a1f02b206081043ec274"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get All Emergencies",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "localhost:8080/api/emergency/get-all",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["api", "emergency", "get-all"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Emergency by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "localhost:8080/api/emergency/get/643e438c4c65a87a5f731a72",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["api", "emergency", "get", "643e438c4c65a87a5f731a72"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Un-Ban users",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "localhost:8080/api/user/unban/7975547583",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["api", "user", "unban", "7975547583"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "User",
+      "item": [
+        {
+          "name": "Send-OTP",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"phoneNumber\": 7975547583\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "localhost:8080/api/user/send-otp",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["api", "user", "send-otp"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Verify-OTP",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"phoneNumber\": 7975547583,\n    \"otp\": 609100\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "localhost:8080/api/user/verify-otp",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["api", "user", "verify-otp"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "localhost:8080/api/logout",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["api", "logout"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "emergency",
+      "item": [
+        {
+          "name": "Create Emergency",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"latitude\": \"10.0215\",\n    \"longitude\": \"10.3546\",\n    \"selected\": \"ALS\",\n    \"emergency\": true,\n    \"userPhone\": 7975547583\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "localhost:8080/api/emergency/create",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["api", "emergency", "create"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "New Request",
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "method": "GET",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"emergencyId\": \"123\",\n    \"fileUrl\": \"file:///data/user/0/host.exp.exponent/cache/ExperienceData/%2540dhxmo%252Fesos-client/Audio/recording-3c5359a2-1f70-4ccb-ad47-7abb98a00dd4.3gp\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "localhost:8080/api/emergency/audio",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["api", "emergency", "audio"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Ambulance",
+      "item": [
+        {
+          "name": "Register",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"phoneNumber\": \"0000000002\",\n    \"password\": \"asdf\",\n    \"companyName\": \"ABC Company\",\n    \"ambulanceType\": \"ALS\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "localhost:8080/api/ambulance/register",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["api", "ambulance", "register"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Login",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"phoneNumber\": \"0000000002\",\n    \"password\": \"asdf\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "localhost:8080/api/ambulance/login",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["api", "ambulance", "login"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"phoneNumber\": \"0000000002\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "localhost:8080/api/ambulance/logout",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["api", "ambulance", "logout"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Content",
+      "item": [
+        {
+          "name": "all",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "localhost:8080/api/test/all",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["api", "test", "all"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "user",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "localhost:8080/api/test/user",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["api", "test", "user"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "ambulance",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "localhost:8080/api/test/ambulance",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["api", "test", "ambulance"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "admin",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "localhost:8080/api/test/admin",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["api", "test", "admin"]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
 }
