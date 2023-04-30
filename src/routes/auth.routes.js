@@ -13,7 +13,7 @@ module.exports = function (app) {
 
     app.post("/api/logout", controller.logout);
 
-    // TODO: remove after initial register
+    // ******** TODO: remove after initial register *********
     app.post(
         "/api/admin/register",
         controller.adminRegister
@@ -24,6 +24,7 @@ module.exports = function (app) {
         [adminRateLimitMiddleware],
         controller.adminLogIn
     );
+
     app.patch("/api/user/ban/:phoneNumber", [
         authJwt.verifyToken,
         authJwt.isAdmin

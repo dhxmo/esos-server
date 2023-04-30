@@ -5,7 +5,7 @@ const AmbulanceDriver = db.ambulanceDriver;
 const DriverLive = db.driverLive;
 const Hospital = db.hospital;
 
-const { registerAdmin } = require("../services/auth.services");
+const { adminRegister, adminLogIn } = require("../service/auth.service");
 
 const { changeDriverAvailability, changeHospitalAvailability } = require("../utils/changeAvailability");
 
@@ -35,7 +35,7 @@ exports.adminRegister = async (req, res) => {
         const phoneNumber = req.body.phoneNumber;
         const password = req.body.password;
 
-        const message = await registerAdmin(phoneNumber, password);
+        const message = await adminRegister(phoneNumber, password);
 
         return res.status(200).send({ message });
     } catch (err) {
@@ -45,16 +45,9 @@ exports.adminRegister = async (req, res) => {
 
 exports.adminLogIn = async (req, res) => {
     try {
-        const admin = await Admin.findOne({ phoneNumber: req.body.phoneNumber });
-        if (!admin) {
-            return res.status(404).send({ message: "Admin Not found." });
-        }
-
-        const passwordIsValid = await bcrypt.compare(req.body.password, admin.password);
-        if (!passwordIsValid) {
-            return res.status(401).send({ message: "Invalid Password!" });
-        }
-        createAndSendToken(req, res, admin)
+        const result = await adminLogIn(phoneNumber, password);
+        req.session.token = result.token;
+        res.status(200).json(result);
     } catch (err) {
         res.status(500).send({ message: err });
     }
