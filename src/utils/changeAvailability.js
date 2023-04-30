@@ -2,11 +2,14 @@ const db = require("../models");
 const DriverLive = db.driverLive;
 const Hospital = db.hospital;
 
-const changeDriverAvailability = async (driverPhone, availabilityStatus) => {
+const changeDriverAvailability = async (driverPhone, ambulanceType, availabilityStatus) => {
     try {
         await DriverLive.findOneAndUpdate(
             { driverPhone },
-            { availability: availabilityStatus },
+            {
+                availability: availabilityStatus,
+                ambulanceType
+            },
         );
     } catch (err) {
         console.log(err);

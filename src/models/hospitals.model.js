@@ -1,8 +1,14 @@
 const mongoose = require("mongoose");
 
 const Hospital = mongoose.model('Hospitals', new mongoose.Schema({
-    phoneNumber: String,
-    password: String,
+    phoneNumber: {
+        type: String,
+        required: true
+    },
+    password: {
+        type: String,
+        required: true
+    },
     location: {
         type: {
             type: String,
@@ -15,10 +21,6 @@ const Hospital = mongoose.model('Hospitals', new mongoose.Schema({
         }
     },
     availability: { type: Boolean, default: true },
-    updatedAt: {
-        type: Date,
-        default: Date.now,
-    },
 }).index({ location: '2dsphere' }));
 
 module.exports = Hospital;

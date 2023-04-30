@@ -101,7 +101,8 @@ exports.ambulanceDriverRegister = async (req, res) => {
             phoneNumber: req.body.phoneNumber,
             password: await bcrypt.hash(req.body.password, 15),
             companyName: req.body.companyName,
-            ambulanceType: req.body.ambulanceType
+            ambulanceType: req.body.ambulanceType,
+            jwtToken: req.body.jwtToken
         });
 
         await ambulanceDriver.save();
@@ -137,10 +138,9 @@ exports.ambulanceDriverLogIn = async (req, res) => {
         }
 
         //  make driver available
-        changeDriverAvailability(req.body.phoneNumber, true);
+        changeDriverAvailability(req.body.phoneNumber, req.body.ambulanceType, true);
 
         //  give jwt
-        // createAndSendToken(req, res, ambulanceDriver)
         const token = jwt.sign({ id: ambulanceDriver.id }, JWT_SECRET, { expiresIn: 86400 });
         const authority = ambulanceDriver.role.toUpperCase();
 
@@ -228,13 +228,12 @@ exports.userVerifyOtp = async (req, res) => {
 
 exports.createHospital = async (req, res) => {
     try {
-        // register driver
         const hospital = new Hospital({
             phoneNumber: req.body.phoneNumber,
             password: await bcrypt.hash(req.body.password, 15),
             location: {
                 type: 'Point',
-                coordinates: [req.body.longitude, req.body.latitude]
+                coordinates: [Number(req.body.longitude), Number(req.body.latitude)]
             }
         });
 

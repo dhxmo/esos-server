@@ -12,7 +12,7 @@ const Emergency = mongoose.model('EmergencyRequest', new mongoose.Schema({
             required: true
         }
     },
-    selected: {
+    selectedAmbulanceType: {
         type: String,
         required: true
     },

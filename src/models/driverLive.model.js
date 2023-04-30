@@ -2,6 +2,7 @@ const mongoose = require("mongoose");
 
 const DriverLive = mongoose.model('DriverLive', new mongoose.Schema({
     driverPhone: String,
+    ambulanceType: String,
     location: {
         type: {
             type: String,

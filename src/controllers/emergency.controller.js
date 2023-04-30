@@ -34,7 +34,7 @@ exports.createEmergency = async (req, res) => {
 
     try {
         // find closest driver and reserve for this call
-        const closestDriver = await findClosestDriver(long, lat);
+        const closestDriver = await findClosestDriver(req.body.selectedAmbulanceType, long, lat);
         changeDriverAvailability(closestDriver.driverPhone, false);
 
         // create emergency call
@@ -43,7 +43,7 @@ exports.createEmergency = async (req, res) => {
                 type: 'Point',
                 coordinates: [long, lat]
             },
-            selected: req.body.selected,
+            selectedAmbulanceType: req.body.selectedAmbulanceType,
             emergency: req.body.emergency,
             userId: req.id,
             userPhone: req.body.userPhone,
@@ -80,7 +80,7 @@ exports.createEmergency = async (req, res) => {
 };
 
 //  this is crude and simplistic. optimize this thinking of edge cases later
-const findClosestDriver = async (long, lat) => {
+const findClosestDriver = async (ambulanceType, long, lat) => {
     try {
         const closestDriver = await DriverLive.aggregate([
             {
@@ -92,7 +92,8 @@ const findClosestDriver = async (long, lat) => {
                     distanceField: 'distance',
                     spherical: true,
                     query: {
-                        availability: true
+                        availability: true,
+                        ambulanceType: ambulanceType,
                     },
                     key: 'location'
                 },
@@ -106,6 +107,7 @@ const findClosestDriver = async (long, lat) => {
                 $limit: 1
             },
         ])
+        console.log(closestDriver[0]);
         return closestDriver[0];
     } catch (err) {
         console.log(err);
@@ -232,4 +234,9 @@ exports.findClosestAvailableHospital = async (req, res) => {
     } catch (err) {
         res.json({ status: err });
     }
+}
+
+//  function to allow a hospital to see it's own inbound emergencies
+exports.seeActiveEmergencies = async (req, res) => {
+
 }

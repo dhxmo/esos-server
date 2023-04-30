@@ -27,10 +27,16 @@ module.exports = function (app) {
         authJwt.isAmbulanceDriver
     ], emergencyControllers.resolveEmergency);
 
-    app.post("/api/emergency/available-hospitals", [
+    app.patch("/api/emergency/available-hospitals", [
         authJwt.verifyToken,
         authJwt.isAmbulanceDriver
     ], emergencyControllers.findClosestAvailableHospital);
+
+    app.post("/api/hospital/see-inbound-emergencies", [
+        authJwt.verifyToken,
+        authJwt.isHospital
+    ],
+        emergencyControllers.seeActiveEmergencies)
 
     // app.post("/api/emergency/audio", [
     //     authJwt.verifyToken,
