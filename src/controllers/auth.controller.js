@@ -5,7 +5,12 @@ const AmbulanceDriver = db.ambulanceDriver;
 const DriverLive = db.driverLive;
 const Hospital = db.hospital;
 
-const { adminRegister, adminLogIn } = require("../service/auth.service");
+const { adminRegister,
+    adminLogIn,
+    adminBanUserStatus,
+    adminRegisterAmbulanceDriver,
+    adminRegisterHospital
+} = require("../services/admin.service");
 
 const { changeDriverAvailability, changeHospitalAvailability } = require("../utils/changeAvailability");
 
@@ -35,11 +40,11 @@ exports.adminRegister = async (req, res) => {
         const phoneNumber = req.body.phoneNumber;
         const password = req.body.password;
 
-        const message = await adminRegister(phoneNumber, password);
+        const result = await adminRegister(phoneNumber, password);
 
-        return res.status(200).send({ message });
+        return res.status(200).json({ status: "success", message: result });
     } catch (err) {
-        return res.status(500).send({ message: err });
+        return res.status(500).json({ status: "failed", message: err });
     }
 };
 
@@ -47,71 +52,42 @@ exports.adminLogIn = async (req, res) => {
     try {
         const result = await adminLogIn(phoneNumber, password);
         req.session.token = result.token;
-        res.status(200).json(result);
+        return res.status(200).json({ status: "success", message: result });
     } catch (err) {
-        res.status(500).send({ message: err });
+        return res.status(500).json({ status: "failed", message: err });
     }
 };
 
 exports.adminBanUser = async (req, res) => {
     try {
-        const filter = { phoneNumber: req.params.phoneNumber };
-        const update = { banned: true };
-        const result = await User.updateMany(filter, update);
-
-        if (result.nModified === 0) {
-            return res.status(404).json({ error: 'No users found' });
-        }
-
-        res.status(200).json({ message: 'Users banned successfully' });
+        const result = await adminBanUserStatus(req.params.phoneNumber, true);
+        return res.status(200).json({ status: "success", message: result });
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        return res.status(500).json({ status: "failed", message: err });
     }
 };
 
 exports.adminUnBanUser = async (req, res) => {
     try {
-        const filter = { phoneNumber: req.params.phoneNumber };
-        const update = { banned: false };
-        const result = await User.updateMany(filter, update);
-
-        if (result.nModified === 0) {
-            return res.status(404).json({ error: 'No users found' });
-        }
-
-        res.status(200).json({ message: 'User unbanned successfully' });
+        const result = await adminBanUserStatus(req.params.phoneNumber, false);
+        return res.status(200).json({ status: "success", message: result });
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        return res.status(500).json({ status: "failed", message: err });
     }
 };
 
 exports.ambulanceDriverRegister = async (req, res) => {
     try {
-        // register driver
-        const ambulanceDriver = new AmbulanceDriver({
-            phoneNumber: req.body.phoneNumber,
-            password: await bcrypt.hash(req.body.password, 15),
-            companyName: req.body.companyName,
-            ambulanceType: req.body.ambulanceType,
-            jwtToken: req.body.jwtToken
-        });
+        const result = adminRegisterAmbulanceDriver(
+            req.body.phoneNumber,
+            req.body.password,
+            req.body.companyName,
+            req.body.ambulanceType
+        );
 
-        await ambulanceDriver.save();
-
-        //  create new driver live location entry
-        const driverLive = new DriverLive({
-            driverPhone: req.body.phoneNumber,
-            availability: false,
-            location: {
-                type: 'Point',
-                coordinates: [0, 0]
-            }
-        });
-        await driverLive.save();
-
-        return res.send({ message: "Ambulance driver was registered successfully!" });
+        return res.status(200).json({ status: "success", message: result });
     } catch (err) {
-        return res.status(500).send({ message: err });
+        return res.status(500).json({ status: "failed", message: err });
     }
 };
 
@@ -219,20 +195,11 @@ exports.userVerifyOtp = async (req, res) => {
 
 exports.createHospital = async (req, res) => {
     try {
-        const hospital = new Hospital({
-            phoneNumber: req.body.phoneNumber,
-            password: await bcrypt.hash(req.body.password, 15),
-            location: {
-                type: 'Point',
-                coordinates: [Number(req.body.longitude), Number(req.body.latitude)]
-            }
-        });
+        const result = await adminRegisterHospital(req.body.phoneNumber, req.body.password, req.body.longitude, req.body.latitude)
 
-        await hospital.save();
-
-        return res.send({ message: "Hospital was registered successfully!" });
+        return res.status(200).json({ status: "success", message: result });
     } catch (err) {
-        return res.status(500).send({ message: err });
+        return res.status(500).json({ status: "failed", message: err });
     }
 };
 
