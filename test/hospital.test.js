@@ -5,7 +5,8 @@ const mongoose = require('mongoose');
 const db = require('../src/models');
 const Hospital = db.hospital;
 
-const { hospitalLogIn } = require('../src/services/hospital.service');
+const services = require('../src/services');
+const hospitalServices = services.hospital;
 
 require('dotenv').config();
 const { MONGODB_URI } = process.env;
@@ -39,7 +40,10 @@ describe('Hospital Functionality', () => {
       const phoneNumber = '0000123456';
       const password = 'password';
 
-      const result = await hospitalLogIn(phoneNumber, password);
+      const result = await hospitalServices.hospitalLogIn(
+        phoneNumber,
+        password
+      );
 
       expect(result).to.have.property('message', 'Logged in successfully');
       expect(result).to.have.property('hospitalId');
@@ -53,7 +57,7 @@ describe('Hospital Functionality', () => {
       const password = 'password';
 
       try {
-        await hospitalLogIn(phoneNumber, password);
+        await hospitalServices.hospitalLogIn(phoneNumber, password);
       } catch (error) {
         expect(error.message).to.equal('Hospital Not found');
       }
@@ -64,7 +68,7 @@ describe('Hospital Functionality', () => {
       const password = 'wrongpassword';
 
       try {
-        await hospitalLogIn(phoneNumber, password);
+        await hospitalServices.hospitalLogIn(phoneNumber, password);
       } catch (error) {
         expect(error.message).to.equal('Invalid Password');
       }

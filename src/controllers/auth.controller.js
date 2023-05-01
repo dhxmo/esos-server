@@ -1,19 +1,13 @@
-const {
-  adminRegister,
-  adminLogIn,
-  adminBanUserStatus,
-  adminRegisterAmbulanceDriver,
-  adminRegisterHospital,
-} = require('../services/admin.service');
+const services = require('../services');
+const adminServices = services.admin;
+const userServices = services.user;
+const hospitalServices = services.hospital;
+const ambulanceDriverServices = services.ambulanceDriver;
 
 const {
   changeDriverAvailability,
   changeHospitalAvailability,
 } = require('../utils/changeAvailability');
-
-const { userRegister } = require('../services/user.service');
-const { hospitalLogIn } = require('../services/hospital.service');
-const { ambulanceDriverLogIn } = require('../services/ambulanceDriver.service');
 
 require('dotenv').config();
 const { TWILIO_ACCOUNT_SID, _TWILIO_AUTH_TOKEN, TWILIO_SERVICE_SID } =
@@ -23,11 +17,10 @@ const client = require('twilio')(TWILIO_ACCOUNT_SID, _TWILIO_AUTH_TOKEN);
 
 exports.adminRegister = async (req, res) => {
   try {
-    const phoneNumber = req.body.phoneNumber;
-    const password = req.body.password;
-
-    const result = await adminRegister(phoneNumber, password);
-
+    const result = await adminServices.adminRegister(
+      req.body.phoneNumber,
+      req.body.password
+    );
     return res.status(200).json({ status: 'success', message: result });
   } catch (err) {
     return res.status(500).json({ status: 'failed', message: err });
@@ -36,7 +29,10 @@ exports.adminRegister = async (req, res) => {
 
 exports.adminLogIn = async (req, res) => {
   try {
-    const result = await adminLogIn(phoneNumber, password);
+    const result = await adminServices.adminLogIn(
+      req.body.phoneNumber,
+      req.body.password
+    );
     req.session.token = result.token;
     return res.status(200).json({ status: 'success', message: result });
   } catch (err) {
@@ -46,7 +42,10 @@ exports.adminLogIn = async (req, res) => {
 
 exports.adminBanUser = async (req, res) => {
   try {
-    const result = await adminBanUserStatus(req.params.phoneNumber, true);
+    const result = await adminServices.adminBanUserStatus(
+      req.params.phoneNumber,
+      true
+    );
     return res.status(200).json({ status: 'success', message: result });
   } catch (err) {
     return res.status(500).json({ status: 'failed', message: err.message });
@@ -55,7 +54,10 @@ exports.adminBanUser = async (req, res) => {
 
 exports.adminUnBanUser = async (req, res) => {
   try {
-    const result = await adminBanUserStatus(req.params.phoneNumber, false);
+    const result = await adminServices.adminBanUserStatus(
+      req.params.phoneNumber,
+      false
+    );
     return res.status(200).json({ status: 'success', message: result });
   } catch (err) {
     return res.status(500).json({ status: 'failed', message: err.message });
@@ -64,7 +66,7 @@ exports.adminUnBanUser = async (req, res) => {
 
 exports.ambulanceDriverRegister = async (req, res) => {
   try {
-    const result = adminRegisterAmbulanceDriver(
+    const result = await adminServices.adminRegisterAmbulanceDriver(
       req.body.phoneNumber,
       req.body.password,
       req.body.companyName,
@@ -79,7 +81,7 @@ exports.ambulanceDriverRegister = async (req, res) => {
 
 exports.ambulanceDriverLogIn = async (req, res) => {
   try {
-    const result = ambulanceDriverLogIn(
+    const result = await ambulanceDriverServices.ambulanceDriverLogIn(
       req.body.phoneNumber,
       req.body.password,
       req.body.ambulanceType
@@ -95,7 +97,7 @@ exports.ambulanceDriverLogIn = async (req, res) => {
 
 exports.ambulanceLogout = async (req, res) => {
   try {
-    changeDriverAvailability(req.body.phoneNumber, false);
+    await changeDriverAvailability(req.body.phoneNumber, false);
 
     req.session = null;
     return res
@@ -133,7 +135,7 @@ exports.userVerifyOtp = async (req, res) => {
         code: otp,
       });
     if (verificationCheck.status === 'approved') {
-      const result = await userRegister(phoneNumber);
+      const result = await userServices.userRegister(phoneNumber);
 
       req.session.token = result.token;
       return res.status(200).json({ status: 'success', message: result });
@@ -149,7 +151,7 @@ exports.userVerifyOtp = async (req, res) => {
 
 exports.createHospital = async (req, res) => {
   try {
-    const result = await adminRegisterHospital(
+    const result = await adminServices.adminRegisterHospital(
       req.body.phoneNumber,
       req.body.password,
       req.body.longitude,
@@ -164,7 +166,10 @@ exports.createHospital = async (req, res) => {
 
 exports.hospitalLogIn = async (req, res) => {
   try {
-    const result = await hospitalLogIn(req.body.phoneNumber, req.body.password);
+    const result = await hospitalServices.hospitalLogIn(
+      req.body.phoneNumber,
+      req.body.password
+    );
 
     req.session.token = token;
 
@@ -176,7 +181,7 @@ exports.hospitalLogIn = async (req, res) => {
 
 exports.hospitalLogout = async (req, res) => {
   try {
-    changeHospitalAvailability(req.body.phoneNumber, false);
+    await changeHospitalAvailability(req.body.phoneNumber, false);
 
     req.session = null;
     return res
@@ -189,7 +194,7 @@ exports.hospitalLogout = async (req, res) => {
 
 exports.hospitalChangeAvailability = async (req, res) => {
   try {
-    changeHospitalAvailability(req.body.phoneNumber, false);
+    await changeHospitalAvailability(req.body.phoneNumber, false);
 
     return res.status(200).json({
       status: 'success',

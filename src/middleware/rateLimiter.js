@@ -1,7 +1,7 @@
 const {
   checkAdminRateLimit,
   checkRateLimit,
-} = require('../service/rateLimit.service');
+} = require('../services/rateLimit.service');
 
 exports.rateLimitMiddleware = async (req, res, next) => {
   try {

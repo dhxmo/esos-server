@@ -1,10 +1,12 @@
 const db = require('../models');
+const services = require('../services');
+
+const websocketServices = services.websocket;
 const Emergency = db.emergency;
 const DriverLive = db.driverLive;
 const Hospital = db.hospital;
 // const AmbulanceDriver = db.ambulanceDriver;
 // const Recording = db.audioRecord;
-const { driverConnections } = require('../websockets');
 
 const { changeDriverAvailability } = require('../utils/changeAvailability');
 // const { admin } = require('../utils/firebase');
@@ -62,7 +64,9 @@ exports.createEmergency = async (req, res) => {
       },
     };
 
-    const driverSocket = driverConnections.get(closestDriver.driverPhone);
+    const driverSocket = websocketServices.driverConnections.get(
+      closestDriver.driverPhone
+    );
     if (driverSocket) {
       driverSocket.send(JSON.stringify(notification));
       console.log(

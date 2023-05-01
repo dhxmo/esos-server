@@ -1,12 +1,8 @@
 const ws = require('ws');
-const jwt = require('jsonwebtoken');
-
-const crypto = require('crypto');
-const { authJwt } = require('../middleware');
 require('dotenv').config();
-const { PORT, JWT_SECRET, HASH_SECRET } = process.env;
+const { PORT } = process.env;
 const { RateLimiterMemory } = require('rate-limiter-flexible');
-const { encrypt, decrypt } = require('../utils/encryptToken');
+const { WebSocketService } = require('../services/websocket.service');
 
 // Create a rate limiter to limit the number of connections per IP address
 const limiter = new RateLimiterMemory({
@@ -14,12 +10,7 @@ const limiter = new RateLimiterMemory({
   duration: 1, // Per second
 });
 
-const driverConnections = new Map();
-
-const server = function (app, db) {
-  const DriverLive = db.driverLive;
-  const AmbulanceDriver = db.ambulanceDriver;
-
+exports.server = (app) => {
   const wsServer = new ws.Server({
     noServer: true,
     path: '/websocket',
@@ -39,49 +30,8 @@ const server = function (app, db) {
 
     // When we receive GPS data from the client, update the driver's live location in the database
     ws.on('message', async (message) => {
-      // verify JWT token
-      const decodedHash = decrypt(hash);
-      const decodedToken = jwt.verify(decodedHash, JWT_SECRET);
-
-      // check if the user is an ambulance driver
       try {
-        const ambulanceDriver = await AmbulanceDriver.findById(decodedToken.id);
-        if (!ambulanceDriver) {
-          ws.send(JSON.stringify({ message: 'Require Ambulance Role' }));
-          ws.close();
-          return;
-        }
-
-        // establish connection and store WebSocket connection for the driver
-        console.log(
-          `WebSocket connection established for driver ${ambulanceDriver.phoneNumber}`
-        );
-        driverConnections.set(ambulanceDriver.phoneNumber, ws);
-
-        const { driverPhone, latitude, longitude } = JSON.parse(message);
-
-        if (driverPhone == ambulanceDriver.phoneNumber) {
-          const driver = await AmbulanceDriver.findOne({
-            phoneNumber: driverPhone,
-          });
-
-          if (!driver) {
-            throw new Error('Driver not registered');
-          }
-          await DriverLive.findOneAndUpdate(
-            { driverPhone },
-            {
-              location: {
-                type: 'Point',
-                coordinates: [longitude, latitude],
-              },
-            }
-          );
-
-          console.log(`Live location updated for driver ${driverPhone}`);
-        } else {
-          throw new Error('Only allowed to updated your own location');
-        }
+        await WebSocketService.handleDriverLiveUpdate(message, ws, hash);
       } catch (err) {
         console.error(err);
 
@@ -131,5 +81,3 @@ const server = function (app, db) {
 
   return server;
 };
-
-module.exports = { driverConnections, server };

@@ -3,10 +3,10 @@ const bcrypt = require('bcrypt');
 const mongoose = require('mongoose');
 
 const db = require('../src/models');
-const {
-  ambulanceDriverLogIn,
-} = require('../src/services/ambulanceDriver.service');
 const AmbulanceDriver = db.ambulanceDriver;
+
+const services = require('../src/services');
+const ambulanceDriverServices = services.ambulanceDriver;
 
 require('dotenv').config();
 const { MONGODB_URI } = process.env;
@@ -36,7 +36,11 @@ describe('Hospital Functionality', () => {
   describe('Ambulance Driver Log In', () => {
     it('should throw an error if the driver is not found', async () => {
       try {
-        await ambulanceDriverLogIn('1234567891', 'password', 'BLS');
+        await ambulanceDriverServices.ambulanceDriverLogIn(
+          '1234567891',
+          'password',
+          'BLS'
+        );
       } catch (err) {
         expect(err.message).to.equal('Ambulance driver Not found');
       }
@@ -44,21 +48,29 @@ describe('Hospital Functionality', () => {
 
     it('should throw an error if the password is invalid', async () => {
       try {
-        await ambulanceDriverLogIn('1234567890', 'invalid', 'BLS');
+        await ambulanceDriverServices.ambulanceDriverLogIn(
+          '1234567890',
+          'invalid',
+          'BLS'
+        );
       } catch (err) {
         expect(err.message).to.equal('Invalid Password');
       }
     });
     it('should throw an error for invalid ambulance type', async () => {
       try {
-        await ambulanceDriverLogIn('1234567890', 'password', 'invalid');
+        await ambulanceDriverServices.ambulanceDriverLogIn(
+          '1234567890',
+          'password',
+          'invalid'
+        );
         throw new Error('Test failed');
       } catch (err) {
         expect(err.message).to.equal('Invalid ambulance type');
       }
     });
     it('should log in the driver successfully and return a token', async () => {
-      const result = await ambulanceDriverLogIn(
+      const result = await ambulanceDriverServices.ambulanceDriverLogIn(
         '1234567890',
         'password',
         'BLS'

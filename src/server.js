@@ -10,8 +10,6 @@ const { server } = require('./websockets');
 require('dotenv').config();
 const { MONGODB_URI, COOKIE_SECRET } = process.env;
 
-const db = require('./models');
-
 const app = express();
 
 const corsOptions = {
@@ -56,7 +54,7 @@ authRoutes(app);
 testRoutes(app);
 emergencyRoutes(app);
 
-const { websocketServer, _ } = server(app, db);
+const websocketServer = server(app);
 
 module.exports = websocketServer;
 

@@ -1,6 +1,6 @@
-const { verifySignUp } = require('../middleware');
 const controller = require('../controllers/auth.controller');
 const {
+  verifySignUp,
   authJwt,
   rateLimitMiddleware,
   adminRateLimitMiddleware,
