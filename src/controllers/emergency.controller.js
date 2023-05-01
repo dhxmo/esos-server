@@ -65,7 +65,9 @@ exports.createEmergency = async (req, res) => {
       },
     };
 
-    const driverSocket = webSocketService.driverConnections.get(closestDriver.driverPhone);
+    const driverSocket = webSocketService.driverConnections.get(
+      closestDriver.driverPhone
+    );
     if (driverSocket) {
       driverSocket.send(JSON.stringify(notification));
       console.log(
@@ -244,4 +246,4 @@ exports.findClosestAvailableHospital = async (req, res) => {
 };
 
 //  function to allow a hospital to see it's own inbound emergencies
-exports.seeActiveEmergencies = async (req, res) => { };
+exports.seeActiveEmergencies = async (req, res) => {};

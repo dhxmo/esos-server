@@ -29,9 +29,9 @@ describe('WebSocketService', () => {
         useUnifiedTopology: true,
       });
       ws = {
-        send: () => { },
-        close: () => { },
-        on: () => { },
+        send: () => {},
+        close: () => {},
+        on: () => {},
       };
       ambulanceDriver = new AmbulanceDriver({
         phoneNumber: '555-1234',
