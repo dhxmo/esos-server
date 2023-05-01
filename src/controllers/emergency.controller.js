@@ -1,6 +1,8 @@
 const db = require('../models');
 
-const { driverConnections } = require('../services/websocket.service');
+const services = require('../src/services');
+const webSocketService = services.websocket;
+
 const Emergency = db.emergency;
 const DriverLive = db.driverLive;
 const Hospital = db.hospital;
@@ -63,7 +65,7 @@ exports.createEmergency = async (req, res) => {
       },
     };
 
-    const driverSocket = driverConnections.get(closestDriver.driverPhone);
+    const driverSocket = webSocketService.driverConnections.get(closestDriver.driverPhone);
     if (driverSocket) {
       driverSocket.send(JSON.stringify(notification));
       console.log(
@@ -242,4 +244,4 @@ exports.findClosestAvailableHospital = async (req, res) => {
 };
 
 //  function to allow a hospital to see it's own inbound emergencies
-exports.seeActiveEmergencies = async (req, res) => {};
+exports.seeActiveEmergencies = async (req, res) => { };
