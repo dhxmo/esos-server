@@ -157,7 +157,6 @@ describe('Admin Functionality', () => {
       expect(result).to.equal('Hospital was registered successfully');
 
       const hosp = await Hospital.findOne({ phoneNumber });
-      console.log(hosp);
       expect(hosp).to.exist;
       expect(hosp.availability).to.be.true;
       expect(hosp.location.type).to.equal('Point');

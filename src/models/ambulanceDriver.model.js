@@ -18,6 +18,7 @@ const AmbulanceDriver = mongoose.model(
     },
     ambulanceType: {
       type: String,
+      enum: ['BLS', 'ALS'],
       required: true,
     },
     jwtToken: {

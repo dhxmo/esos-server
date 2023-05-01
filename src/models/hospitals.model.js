@@ -23,6 +23,7 @@ const Hospital = mongoose.model(
       },
     },
     availability: { type: Boolean, default: true },
+    role: { type: String, default: 'hospital' },
   }).index({ location: '2dsphere' })
 );
 

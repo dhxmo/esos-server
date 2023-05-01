@@ -1,10 +1,3 @@
-const db = require('../models');
-const User = db.user;
-const Admin = db.admin;
-const AmbulanceDriver = db.ambulanceDriver;
-const DriverLive = db.driverLive;
-const Hospital = db.hospital;
-
 const {
   adminRegister,
   adminLogIn,
@@ -18,31 +11,15 @@ const {
   changeHospitalAvailability,
 } = require('../utils/changeAvailability');
 
-var jwt = require('jsonwebtoken');
-var bcrypt = require('bcryptjs');
+const { userRegister } = require('../services/user.service');
+const { hospitalLogIn } = require('../services/hospital.service');
+const { ambulanceDriverLogIn } = require('../services/ambulanceDriver.service');
 
 require('dotenv').config();
-const {
-  JWT_SECRET,
-  TWILIO_ACCOUNT_SID,
-  _TWILIO_AUTH_TOKEN,
-  TWILIO_SERVICE_SID,
-} = process.env;
+const { TWILIO_ACCOUNT_SID, _TWILIO_AUTH_TOKEN, TWILIO_SERVICE_SID } =
+  process.env;
 
 const client = require('twilio')(TWILIO_ACCOUNT_SID, _TWILIO_AUTH_TOKEN);
-
-const createAndSendToken = async (req, res, user) => {
-  const token = jwt.sign({ id: user.id }, JWT_SECRET, { expiresIn: 86400 });
-  const authority = user.role.toUpperCase();
-
-  req.session.token = token;
-
-  res.status(200).json({
-    message: 'Logged in successfully',
-    token: token,
-    authority: authority,
-  });
-};
 
 exports.adminRegister = async (req, res) => {
   try {
@@ -63,7 +40,7 @@ exports.adminLogIn = async (req, res) => {
     req.session.token = result.token;
     return res.status(200).json({ status: 'success', message: result });
   } catch (err) {
-    return res.status(500).json({ status: 'failed', message: err });
+    return res.status(500).json({ status: 'failed', message: err.message });
   }
 };
 
@@ -72,7 +49,7 @@ exports.adminBanUser = async (req, res) => {
     const result = await adminBanUserStatus(req.params.phoneNumber, true);
     return res.status(200).json({ status: 'success', message: result });
   } catch (err) {
-    return res.status(500).json({ status: 'failed', message: err });
+    return res.status(500).json({ status: 'failed', message: err.message });
   }
 };
 
@@ -81,7 +58,7 @@ exports.adminUnBanUser = async (req, res) => {
     const result = await adminBanUserStatus(req.params.phoneNumber, false);
     return res.status(200).json({ status: 'success', message: result });
   } catch (err) {
-    return res.status(500).json({ status: 'failed', message: err });
+    return res.status(500).json({ status: 'failed', message: err.message });
   }
 };
 
@@ -96,56 +73,23 @@ exports.ambulanceDriverRegister = async (req, res) => {
 
     return res.status(200).json({ status: 'success', message: result });
   } catch (err) {
-    return res.status(500).json({ status: 'failed', message: err });
+    return res.status(500).json({ status: 'failed', message: err.message });
   }
 };
 
 exports.ambulanceDriverLogIn = async (req, res) => {
   try {
-    //  validate password
-    let ambulanceDriver = await AmbulanceDriver.findOne({
-      phoneNumber: req.body.phoneNumber,
-    });
-    if (!ambulanceDriver) {
-      return res.status(404).send({ message: 'Ambulance driver Not found.' });
-    }
-
-    const passwordIsValid = bcrypt.compare(
-      req.body.password,
-      ambulanceDriver.password
-    );
-    if (!passwordIsValid) {
-      return res.status(401).send({ message: 'Invalid Password!' });
-    }
-
-    //  make driver available
-    changeDriverAvailability(
+    const result = ambulanceDriverLogIn(
       req.body.phoneNumber,
-      req.body.ambulanceType,
-      true
+      req.body.password,
+      req.body.ambulanceType
     );
 
-    //  give jwt
-    const token = jwt.sign({ id: ambulanceDriver.id }, JWT_SECRET, {
-      expiresIn: 86400,
-    });
-    const authority = ambulanceDriver.role.toUpperCase();
+    req.session.token = result.token;
 
-    ambulanceDriver = await AmbulanceDriver.findOneAndUpdate(
-      { phoneNumber: req.body.phoneNumber },
-      { jwtToken: token }
-    );
-    await ambulanceDriver.save();
-
-    req.session.token = token;
-
-    res.status(200).json({
-      message: 'Logged in successfully',
-      token: token,
-      authority: authority,
-    });
+    return res.status(200).json({ status: 'success', message: result });
   } catch (err) {
-    res.status(500).send({ message: err });
+    return res.status(500).json({ status: 'failed', message: err.message });
   }
 };
 
@@ -154,7 +98,9 @@ exports.ambulanceLogout = async (req, res) => {
     changeDriverAvailability(req.body.phoneNumber, false);
 
     req.session = null;
-    return res.status(200).send({ message: "You've been signed out!" });
+    return res
+      .status(200)
+      .json({ status: 'success', message: "You've been signed out!" });
   } catch (err) {
     this.next(err);
   }
@@ -169,9 +115,11 @@ exports.userSendOtp = async (req, res) => {
         to: `+91${phoneNumber}`,
         channel: 'sms',
       });
-    res.json({ success: true, data: verification.sid });
+    return res
+      .status(200)
+      .json({ status: 'success', message: verification.sid });
   } catch (err) {
-    res.json({ success: false, data: err });
+    return res.status(500).json({ status: 'failed', message: err.message });
   }
 };
 
@@ -185,38 +133,17 @@ exports.userVerifyOtp = async (req, res) => {
         code: otp,
       });
     if (verificationCheck.status === 'approved') {
-      console.log('OTP verification successful');
-      const user = await User.findOne({ phoneNumber: `+91${phoneNumber}` });
+      const result = await userRegister(phoneNumber);
 
-      if (!user) {
-        try {
-          const user = new User({
-            phoneNumber: `+91${phoneNumber}`,
-          });
-
-          await user.save();
-
-          createAndSendToken(req, res, user);
-        } catch (err) {
-          return res.json({ success: false });
-        }
-      } else {
-        if (user.banned === true) {
-          return res
-            .status(401)
-            .send({
-              message:
-                "Banned number. You're not allowed on this platform. Contact admin to revoke ban",
-            });
-        }
-        createAndSendToken(req, res, user);
-      }
-    } else {
-      res.json({ success: false });
+      req.session.token = result.token;
+      return res.status(200).json({ status: 'success', message: result });
     }
+
+    return res
+      .status(401)
+      .json({ status: 'failed', message: 'verification failed' });
   } catch (err) {
-    console.error(err);
-    res.json({ success: false });
+    return res.status(500).json({ status: 'failed', message: err.message });
   }
 };
 
@@ -237,29 +164,13 @@ exports.createHospital = async (req, res) => {
 
 exports.hospitalLogIn = async (req, res) => {
   try {
-    //  validate password
-    let hospital = await Hospital.findOne({
-      phoneNumber: req.body.phoneNumber,
-    });
-    if (!hospital) {
-      return res.status(404).send({ message: 'Hospital Not found.' });
-    }
+    const result = await hospitalLogIn(req.body.phoneNumber, req.body.password);
 
-    const passwordIsValid = bcrypt.compare(
-      req.body.password,
-      hospital.password
-    );
-    if (!passwordIsValid) {
-      return res.status(401).send({ message: 'Invalid Password!' });
-    }
+    req.session.token = token;
 
-    //  make hospital available
-    changeHospitalAvailability(req.body.phoneNumber, true);
-
-    //  give jwt
-    createAndSendToken(req, res, hospital);
+    return res.status(200).json({ status: 'success', message: result });
   } catch (err) {
-    res.status(500).send({ message: err });
+    return res.status(500).json({ status: 'failed', message: err });
   }
 };
 
@@ -268,7 +179,9 @@ exports.hospitalLogout = async (req, res) => {
     changeHospitalAvailability(req.body.phoneNumber, false);
 
     req.session = null;
-    return res.status(200).send({ message: "You've been signed out!" });
+    return res
+      .status(200)
+      .json({ status: 'success', message: "You've been signed out!" });
   } catch (err) {
     this.next(err);
   }
@@ -278,21 +191,21 @@ exports.hospitalChangeAvailability = async (req, res) => {
   try {
     changeHospitalAvailability(req.body.phoneNumber, false);
 
-    return res
-      .status(200)
-      .json({
-        status: 'success',
-        data: 'Hospital availability has been changed',
-      });
+    return res.status(200).json({
+      status: 'success',
+      message: 'Hospital availability has been changed',
+    });
   } catch (err) {
-    res.status(404).json({ status: 'failed', data: err });
+    res.status(404).json({ status: 'failed', message: err.message });
   }
 };
 
 exports.logout = async (req, res) => {
   try {
     req.session = null;
-    return res.status(200).send({ message: "You've been signed out!" });
+    return res
+      .status(200)
+      .json({ status: 'success', message: "You've been signed out!" });
   } catch (err) {
     this.next(err);
   }
