@@ -6,5 +6,6 @@ services.hospital = require('./hospital.service');
 services.rateLimit = require('./rateLimit.service');
 services.user = require('./user.service');
 services.websocket = require('./websocket.service');
+services.emergency = require('./emergency.service');
 
 module.exports = services;

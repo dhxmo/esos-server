@@ -1,7 +1,8 @@
 const db = require('../models');
 
-const services = require('../src/services');
+const services = require('../services');
 const webSocketService = services.websocket;
+const emergencyService = services.emergency;
 
 const Emergency = db.emergency;
 const DriverLive = db.driverLive;
@@ -27,137 +28,19 @@ exports.createEmergency = async (req, res) => {
   const lat = Number(req.body.latitude);
 
   try {
-    // find closest driver and reserve for this call
-    const closestDriver = await findClosestDriver(
-      req.body.selectedAmbulanceType,
+    const result = await emergencyService.createEmergency(
       long,
-      lat
+      lat,
+      req.body.selectAmbulanceType,
+      req.body.emergency,
+      req.id,
+      req.body.userPhone
     );
-    changeDriverAvailability(closestDriver.driverPhone, false);
-
-    // create emergency call
-    const request = await Emergency.create({
-      location: {
-        type: 'Point',
-        coordinates: [long, lat],
-      },
-      selectedAmbulanceType: req.body.selectedAmbulanceType,
-      emergency: req.body.emergency,
-      userId: req.id,
-      userPhone: req.body.userPhone,
-      assignedDriver: closestDriver.driverPhone,
-    });
-
-    // TODO: test firebase notification send
-    // send push notification using firebase to get ready
-    // await firebasePushNotification(closestDriver.driverPhone);
-
-    // Find the WebSocket connection for the assigned driver
-    const notification = {
-      type: 'EMERGENCY_ASSIGNED',
-      data: {
-        requestId: request._id,
-        location: {
-          longitude: long,
-          latitude: lat,
-        },
-        userPhone: userPhone,
-      },
-    };
-
-    const driverSocket = webSocketService.driverConnections.get(
-      closestDriver.driverPhone
-    );
-    if (driverSocket) {
-      driverSocket.send(JSON.stringify(notification));
-      console.log(
-        `Emergency alert sent to ambulance driver ${closestDriver.driverPhone}`
-      );
-    }
-
-    res.json({ data: request, status: 'success' });
+    return res.status(200).json({ status: 'success', message: result });
   } catch (err) {
-    res.json({ status: err });
+    return res.status(500).json({ status: 'failed', message: err });
   }
 };
-
-//  this is crude and simplistic. optimize this thinking of edge cases later
-const findClosestDriver = async (ambulanceType, long, lat) => {
-  try {
-    const closestDriver = await DriverLive.aggregate([
-      {
-        $geoNear: {
-          near: {
-            type: 'Point',
-            coordinates: [long, lat],
-          },
-          distanceField: 'distance',
-          spherical: true,
-          query: {
-            availability: true,
-            ambulanceType: ambulanceType,
-          },
-          key: 'location',
-        },
-      },
-      {
-        $sort: {
-          distance: 1,
-        },
-      },
-      {
-        $limit: 1,
-      },
-    ]);
-    console.log(closestDriver[0]);
-    return closestDriver[0];
-  } catch (err) {
-    console.log(err);
-    throw new Error(err);
-  }
-};
-
-// const firebasePushNotification = async (phoneNumber) => {
-//     const messaging = admin.messaging();
-//     const driverToken = await AmbulanceDriver.findOne({ phoneNumber });
-
-//     // Send the push notification to the driver's device
-//     const payload = {
-//         data: {
-//             title: 'New Emergency Call',
-//             body: 'Please get ready to serve the patient.',
-//             click_action: 'OPEN_EMERGENCY_CALL'
-//         },
-//         token: driverToken.jwtToken
-//     };
-//     console.log("pay", payload);
-
-//     await messaging.send(payload)
-//         .then((response) => {
-//             // Response is a message ID string.
-//             console.log('Successfully sent message:', response);
-//         })
-//         .catch((error) => {
-//             console.log('Error sending message:', error);
-//         });
-//     console.log("firebase push");
-// }
-
-// exports.uploadAudioToS3 = async (req, res) => {
-// const emergency_id = req.body.emergencyId;
-// const fileUrl = req.body.fileUrl;
-// const params = {
-//     Bucket: AWS_S3_BUCKET,
-//     Key: fileName,
-//     Body: fileContent,
-// };
-
-// const uploadResult = await s3.upload(params).promise();
-// res.json({ status: "success", data: `File uploaded to S3 bucket: ${uploadResult.Location}` });
-// } catch (err) {
-//     res.json({ status: err });
-// }
-// }
 
 exports.getEmergencyById = async (req, res) => {
   try {
@@ -167,6 +50,7 @@ exports.getEmergencyById = async (req, res) => {
     res.status(500).json({ status: 'failed', message: err });
   }
 };
+
 exports.getAllEmergencies = async (_, res) => {
   try {
     const requests = await Emergency.find();
@@ -178,29 +62,21 @@ exports.getAllEmergencies = async (_, res) => {
 
 exports.resolveEmergency = async (req, res) => {
   try {
-    const emergency = await Emergency.findById(req.body.reqId);
-
-    emergency.resolved = true;
-    emergency.updatedAt = Date.now();
-    await emergency.save();
-
-    res.json({ status: 'success' });
+    const result = await emergencyService.emergencyResolve(req.body.reqId);
+    return res.status(200).json({ status: 'success', message: result });
   } catch (err) {
-    res.json({ status: err });
+    return res.status(500).json({ status: 'failed', message: err });
   }
 };
 
 exports.confirmPatientPickUp = async (req, res) => {
   try {
-    const emergency = await Emergency.findById(req.body.reqId);
-
-    emergency.pickUp = true;
-    emergency.pickUpAt = Date.now();
-    await emergency.save();
-
-    res.json({ status: 'success' });
+    const result = await emergencyService.emergencyConfirmPatientPickUp(
+      req.body.reqId
+    );
+    return res.status(200).json({ status: 'success', message: result });
   } catch (err) {
-    res.json({ status: err });
+    return res.status(500).json({ status: 'failed', message: err });
   }
 };
 
@@ -246,4 +122,7 @@ exports.findClosestAvailableHospital = async (req, res) => {
 };
 
 //  function to allow a hospital to see it's own inbound emergencies
-exports.seeActiveEmergencies = async (req, res) => {};
+exports.seeActiveEmergencies = async (req, res) => {
+  // get id from jwt
+  // query emergency for id of hospital
+};
