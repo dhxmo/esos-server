@@ -1,7 +1,6 @@
 const db = require('../models');
-const services = require('../services');
 
-const websocketServices = services.websocket;
+const { driverConnections } = require('../services/websocket.service');
 const Emergency = db.emergency;
 const DriverLive = db.driverLive;
 const Hospital = db.hospital;
@@ -64,9 +63,7 @@ exports.createEmergency = async (req, res) => {
       },
     };
 
-    const driverSocket = websocketServices.driverConnections.get(
-      closestDriver.driverPhone
-    );
+    const driverSocket = driverConnections.get(closestDriver.driverPhone);
     if (driverSocket) {
       driverSocket.send(JSON.stringify(notification));
       console.log(

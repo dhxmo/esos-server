@@ -15,15 +15,17 @@ const WebSocketService = {
   async handleDriverLiveUpdate(message, ws, hash) {
     // verify JWT token
     const decodedHash = decrypt(hash);
+    console.log('decoded', decodedHash);
     const decodedToken = jwt.verify(decodedHash, JWT_SECRET);
+    console.log('decoded token', decodedToken);
 
     // check if the user is an ambulance driver
     try {
       const ambulanceDriver = await AmbulanceDriver.findById(decodedToken.id);
+      console.log('amb', ambulanceDriver);
       if (!ambulanceDriver) {
-        ws.send(JSON.stringify({ message: 'Require Ambulance Role' }));
         ws.close();
-        return;
+        throw new Error('Not a registered driver');
       }
 
       // establish connection and store WebSocket connection for the driver

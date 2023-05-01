@@ -4,7 +4,10 @@ const DriverLive = mongoose.model(
   'DriverLive',
   new mongoose.Schema({
     driverPhone: String,
-    ambulanceType: String,
+    ambulanceType: {
+      type: String,
+      enum: ['BLS', 'ALS'],
+    },
     location: {
       type: {
         type: String,
