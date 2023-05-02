@@ -21,6 +21,7 @@ describe('Hospital Functionality', () => {
     });
     hospital = new Hospital({
       name: 'hospital A',
+      city: 'city A',
       phoneNumber: '0000123456',
       password: await bcrypt.hash('password', 15),
       location: {

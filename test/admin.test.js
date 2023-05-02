@@ -141,6 +141,7 @@ describe('Admin Functionality', () => {
 
     it('should register a hospital', async () => {
       const name = 'hospital A';
+      const city = 'city A';
       const phoneNumber = '0000123456';
       const password = 'password';
       const longitude = '12.345';
@@ -148,6 +149,7 @@ describe('Admin Functionality', () => {
 
       const result = await adminServices.adminRegisterHospital(
         name,
+        city,
         phoneNumber,
         password,
         longitude,

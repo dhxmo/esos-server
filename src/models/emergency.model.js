@@ -14,6 +14,10 @@ const Emergency = mongoose.model(
         required: true,
       },
     },
+    city: {
+      type: String,
+      required: true,
+    },
     selectedAmbulanceType: {
       type: String,
       required: true,

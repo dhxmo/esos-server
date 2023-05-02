@@ -31,6 +31,7 @@ exports.createEmergency = async (req, res) => {
     const result = await emergencyService.createEmergency(
       long,
       lat,
+      req.body.city,
       req.body.selectedAmbulanceType,
       req.body.emergency,
       req.id,
@@ -83,8 +84,13 @@ exports.confirmPatientPickUp = async (req, res) => {
 // };
 
 exports.getAvailableHospitals = async (req, res) => {
+  const city = req.body.city;
+
   try {
-    const hospitals = await Hospital.find({ availability: true });
+    const hospitals = await Hospital.find({
+      availability: true,
+      city,
+    });
     res.status(200).json({ status: 'success', message: hospitals });
   } catch (err) {
     res.status(500).json({ status: 'failed', message: err });

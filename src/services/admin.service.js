@@ -84,6 +84,7 @@ exports.adminRegisterAmbulanceDriver = async (
 
 exports.adminRegisterHospital = async (
   name,
+  city,
   phoneNumber,
   password,
   longitude,
@@ -91,6 +92,7 @@ exports.adminRegisterHospital = async (
 ) => {
   const hospital = new Hospital({
     name,
+    city,
     phoneNumber,
     password: await bcrypt.hash(password, 15),
     location: {

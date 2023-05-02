@@ -157,6 +157,7 @@ exports.createHospital = async (req, res) => {
   try {
     const result = await adminServices.adminRegisterHospital(
       req.body.name,
+      req.body.city,
       req.body.phoneNumber,
       req.body.password,
       req.body.longitude,

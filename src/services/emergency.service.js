@@ -11,6 +11,7 @@ const {
 exports.createEmergency = async (
   longitude,
   latitude,
+  city,
   selectedAmbulanceType,
   emergency,
   userId,
@@ -46,6 +47,7 @@ exports.createEmergency = async (
       type: 'Point',
       coordinates: patientLocation,
     },
+    city,
     selectedAmbulanceType,
     emergency,
     userId,

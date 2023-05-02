@@ -34,6 +34,7 @@ module.exports = function (app) {
 
   app.get(
     '/api/hospital/get-all-available',
+    [authJwt.verifyToken, authJwt.isUser, verifyUserState.checkBannedUser],
     emergencyControllers.getAvailableHospitals
   );
 
