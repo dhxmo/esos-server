@@ -3,6 +3,10 @@ const mongoose = require('mongoose');
 const Hospital = mongoose.model(
   'Hospitals',
   new mongoose.Schema({
+    name: {
+      type: String,
+      required: true,
+    },
     phoneNumber: {
       type: String,
       required: true,

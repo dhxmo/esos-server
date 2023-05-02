@@ -26,16 +26,15 @@ module.exports = function (app) {
     emergencyControllers.resolveEmergency
   );
 
-  // app.patch(
-  //   '/api/emergency/available-hospitals',
-  //   [authJwt.verifyToken, authJwt.isAmbulanceDriver],
-  //   emergencyControllers.findClosestAvailableHospital
-  // );
-
   app.post(
     '/api/hospital/see-inbound-emergencies',
     [authJwt.verifyToken, authJwt.isHospital],
-    emergencyControllers.seeActiveEmergencies
+    emergencyControllers.seeActiveInboundEmergencies
+  );
+
+  app.get(
+    '/api/hospital/get-all-available',
+    emergencyControllers.getAvailableHospitals
   );
 
   // app.post("/api/emergency/audio", [

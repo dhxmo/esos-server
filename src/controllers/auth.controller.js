@@ -156,6 +156,7 @@ exports.userVerifyOtp = async (req, res) => {
 exports.createHospital = async (req, res) => {
   try {
     const result = await adminServices.adminRegisterHospital(
+      req.body.name,
       req.body.phoneNumber,
       req.body.password,
       req.body.longitude,

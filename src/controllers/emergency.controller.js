@@ -82,6 +82,15 @@ exports.confirmPatientPickUp = async (req, res) => {
 //   }
 // };
 
+exports.getAvailableHospitals = async (req, res) => {
+  try {
+    const hospitals = await Hospital.find({ availability: true });
+    res.status(200).json({ status: 'success', message: hospitals });
+  } catch (err) {
+    res.status(500).json({ status: 'failed', message: err });
+  }
+};
+
 exports.resolveEmergency = async (req, res) => {
   try {
     const result = await emergencyService.emergencyResolve(req.body.reqId);
@@ -91,8 +100,11 @@ exports.resolveEmergency = async (req, res) => {
   }
 };
 
-//  function to allow a hospital to see it's own inbound emergencies
-exports.seeActiveEmergencies = async (req, res) => {
-  // get id from jwt
-  // query emergency for id of hospital
+exports.seeActiveInboundEmergencies = async (req, res) => {
+  try {
+    const hospitals = await Emergency.find({ assignedHospital: req.id });
+    res.status(200).json({ status: 'success', message: hospitals });
+  } catch (err) {
+    res.status(500).json({ status: 'failed', message: err });
+  }
 };
