@@ -140,12 +140,14 @@ describe('Admin Functionality', () => {
     });
 
     it('should register a hospital', async () => {
+      const name = 'hospital A';
       const phoneNumber = '0000123456';
       const password = 'password';
       const longitude = '12.345';
       const latitude = '10.765';
 
       const result = await adminServices.adminRegisterHospital(
+        name,
         phoneNumber,
         password,
         longitude,

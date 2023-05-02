@@ -44,7 +44,7 @@ describe('Emergency Service', () => {
       ambulanceType: ambulanceDriver.ambulanceType,
       location: {
         type: 'Point',
-        coordinates: [10.09, 20.09],
+        coordinates: [12.956091, 77.720996],
       },
     });
 
@@ -64,7 +64,7 @@ describe('Emergency Service', () => {
       ambulanceType: ambulanceDriver2.ambulanceType,
       location: {
         type: 'Point',
-        coordinates: [10.1, 20.43],
+        coordinates: [12.956081, 77.720994],
       },
     });
 
@@ -77,44 +77,43 @@ describe('Emergency Service', () => {
   });
 
   describe('createEmergency', () => {
-    it('should create an emergency', async () => {
-      const longitude = 10.02;
-      const latitude = 20.29;
-      const selectedAmbulanceType = 'ALS';
-      const emergency = true;
-      const userId = '123';
-      const userPhone = '555-4321';
-
-      await emergencyService.createEmergency(
-        longitude,
-        latitude,
-        selectedAmbulanceType,
-        emergency,
-        userId,
-        userPhone
-      );
-
-      const createdEmergency = await Emergency.findOne({
-        userId,
-      });
-
-      expect(createdEmergency).to.exist;
-      expect(createdEmergency.location.type).to.equal('Point');
-      expect(createdEmergency.location.coordinates[0]).to.equal(longitude);
-      expect(createdEmergency.location.coordinates[1]).to.equal(latitude);
-      expect(createdEmergency.selectedAmbulanceType).to.equal(
-        selectedAmbulanceType
-      );
-      expect(createdEmergency.emergency).to.equal(emergency);
-      expect(createdEmergency.userId).to.equal(userId);
-      expect(createdEmergency.userPhone).to.equal(userPhone);
-      expect(createdEmergency.assignedDriver).to.equal(
-        ambulanceDriver2.phoneNumber
-      );
-      expect(createdEmergency.resolved).to.equal(false);
-    });
-
+    // TODO: uncomment when any changes to create emergency, till then keep commented
+    //  google api expensive and we broke fam
+    // it('should create an emergency', async () => {
+    //   const longitude = 12.961509;
+    //   const latitude = 77.709673;
+    //   const selectedAmbulanceType = 'ALS';
+    //   const emergency = true;
+    //   const userId = '12334567';
+    //   const userPhone = '555-4321';
+    //   await emergencyService.createEmergency(
+    //     longitude,
+    //     latitude,
+    //     selectedAmbulanceType,
+    //     emergency,
+    //     userId,
+    //     userPhone,
+    //     false
+    //   );
+    //   const createdEmergency = await Emergency.findOne({
+    //     userId,
+    //   });
+    //   expect(createdEmergency).to.exist;
+    //   expect(createdEmergency.location.type).to.equal('Point');
+    //   expect(createdEmergency.location.coordinates[0]).to.equal(longitude);
+    //   expect(createdEmergency.location.coordinates[1]).to.equal(latitude);
+    //   expect(createdEmergency.selectedAmbulanceType).to.equal(
+    //     selectedAmbulanceType
+    //   );
+    //   expect(createdEmergency.emergency).to.equal(emergency);
+    //   expect(createdEmergency.userId).to.equal(userId);
+    //   expect(createdEmergency.userPhone).to.equal(userPhone);
+    //   expect(createdEmergency.assignedDriver).to.equal(
+    //     ambulanceDriver2.phoneNumber
+    //   );
+    //   expect(createdEmergency.resolved).to.equal(false);
+    // });
     // TODO:
-    it('should create an emergency and send websocket message to assigned driver', async () => {});
+    // it('should create an emergency and send websocket message to assigned driver', async () => { });
   });
 });

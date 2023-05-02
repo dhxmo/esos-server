@@ -20,6 +20,7 @@ describe('Hospital Functionality', () => {
       useUnifiedTopology: true,
     });
     hospital = new Hospital({
+      name: 'hospital A',
       phoneNumber: '0000123456',
       password: await bcrypt.hash('password', 15),
       location: {

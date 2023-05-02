@@ -1,6 +1,9 @@
 require('dotenv').config();
 const { GOOGLE_MAPS_API_KEY } = process.env;
 
+import { Client } from '@googlemaps/google-maps-services-js';
+const client = new Client({});
+
 const googleMapsClient = require('@google/maps').createClient({
   key: GOOGLE_MAPS_API_KEY,
   Promise: Promise,
@@ -27,17 +30,17 @@ exports.createEmergency = async (
 
   // patient location
   const patientLocation = [longitude, latitude];
-  // // driver location
-  // const sourceCoordinates
 
   // find closest driver and reserve for this call
   const closestDriver = await findClosestDriver(
     selectedAmbulanceType,
     patientLocation
   );
+  console.log('clo dri', closestDriver);
+
   changeDriverAvailability(
     closestDriver.driverPhone,
-    selectedAmbulanceType,
+    closestDriver.ambulanceType,
     false
   );
 
@@ -45,7 +48,7 @@ exports.createEmergency = async (
   const request = await Emergency.create({
     location: {
       type: 'Point',
-      coordinates: [longitude, latitude],
+      coordinates: patientLocation,
     },
     selectedAmbulanceType,
     emergency,
@@ -53,6 +56,7 @@ exports.createEmergency = async (
     userPhone,
     assignedDriver: closestDriver.driverPhone,
   });
+  console.log('req', request);
 
   // TODO: test firebase notification send
   // send push notification using firebase to get ready
@@ -89,7 +93,7 @@ exports.createEmergency = async (
   return {
     location: {
       type: 'Point',
-      coordinates: [longitude, latitude],
+      coordinates: patientLocation,
     },
     selectedAmbulanceType: selectedAmbulanceType,
     userId: userId,
@@ -119,7 +123,6 @@ exports.emergencyConfirmPatientPickUp = async (reqId) => {
   return `Emergency ${reqId} patient picked up`;
 };
 
-//  this is crude and simplistic. optimize this thinking of edge cases later
 const findClosestDriver = async (ambulanceType, patientLocation) => {
   try {
     const closestDrivers = await DriverLive.aggregate([
@@ -168,8 +171,6 @@ const findClosestDriver = async (ambulanceType, patientLocation) => {
   }
 };
 
-//TODO: this is crude and simplistic. make this such that it collates real time traffic data
-//  and finds the hospital which can be reached in the least time
 const findClosestHospital = async (reqId, driverLocation) => {
   const closestHospitals = await Hospital.aggregate([
     {
@@ -220,18 +221,19 @@ const findClosestHospital = async (reqId, driverLocation) => {
 
 const getTravelTime = async (startLocation, endLocation) => {
   try {
-    const response = await googleMapsClient
-      .directions({
-        origin: startLocation,
-        destination: endLocation,
+    const response = await client.distancematrix({
+      params: {
+        origins: [startLocation],
+        destinations: [endLocation],
         mode: 'driving',
         traffic_model: 'best_guess',
         departure_time: 'now',
-      })
-      .asPromise();
-
+        key: GOOGLE_MAPS_API_KEY,
+      },
+      timeout: 1000, // milliseconds
+    });
     const durationInTraffic =
-      response.json.routes[0].legs[0].duration_in_traffic.value;
+      response.data.rows[0].elements[0].duration_in_traffic.value;
 
     return durationInTraffic;
   } catch (err) {
