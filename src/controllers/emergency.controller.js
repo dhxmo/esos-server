@@ -73,25 +73,24 @@ exports.confirmPatientPickUp = async (req, res) => {
   }
 };
 
-//  TODO: for patients who want to select a specific hospital
-// exports.findClosestAvailableHospital = async (req, res) => {
-//   try {
-
-//     res.json({ status: 'success', data: assignedHospital.location });
-//   } catch (err) {
-//     res.json({ status: err });
-//   }
-// };
-
 exports.getAvailableHospitals = async (req, res) => {
   const city = req.body.city;
 
   try {
+    let h = [];
     const hospitals = await Hospital.find({
       availability: true,
       city,
     });
-    res.status(200).json({ status: 'success', message: hospitals });
+
+    for (let i = 0; i < hospitals.length; i++) {
+      h.push({
+        name: hospitals[i].name,
+        _id: hospitals[i]._id,
+      });
+    }
+
+    res.status(200).json({ status: 'success', message: h });
   } catch (err) {
     res.status(500).json({ status: 'failed', message: err });
   }

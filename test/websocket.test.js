@@ -9,6 +9,7 @@ const { MONGODB_URI } = process.env;
 const db = require('../src/models');
 const AmbulanceDriver = db.ambulanceDriver;
 const DriverLive = db.driverLive;
+const User = db.user;
 
 const services = require('../src/services');
 const webSocketService = services.websocket;
@@ -21,7 +22,14 @@ const expect = chai.expect;
 
 describe('WebSocketService', () => {
   describe('handleDriverLiveUpdate', () => {
-    let ws, ambulanceDriver, hash, newDriverLive;
+    let ws, ambulanceDriver, hash, newDriverLive, user;
+
+    const senderPhone = '1234567890';
+    const recipientPhone = '0987654321';
+    const text = 'Hello, how are you?';
+    const message = JSON.stringify({ senderPhone, recipientPhone, text });
+    const hash2 =
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjVmZmE3ZjNkZGFmOTQ3NGQ3NjVhMmZhZSIsImlhdCI6MTYyMjQzOTgxMn0.Rcez09xHbzCpM9R9aqDgA4hE_gzITw0kHTPfehvjJpA'; // valid JWT token
 
     beforeAll(async () => {
       await mongoose.connect(MONGODB_URI, {
@@ -53,17 +61,25 @@ describe('WebSocketService', () => {
 
       await newDriverLive.save();
 
+      user = new User({
+        phoneNumber: '0000000000',
+      });
+
+      await user.save();
+
       hash = encrypt(
         jwt.sign({ id: ambulanceDriver._id }, process.env.JWT_SECRET)
       );
     });
     afterAll(async () => {
       await AmbulanceDriver.deleteMany({});
+      await User.deleteMany({});
       await DriverLive.deleteMany({});
       await mongoose.connection.close();
     });
     it('should update the driver location', async () => {
       const message = JSON.stringify({
+        type: 'locationUpdate',
         driverPhone: ambulanceDriver.phoneNumber,
         latitude: 40.7128,
         longitude: -74.006,

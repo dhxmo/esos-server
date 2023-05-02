@@ -2,7 +2,10 @@ const ws = require('ws');
 require('dotenv').config();
 const { PORT } = process.env;
 const { RateLimiterMemory } = require('rate-limiter-flexible');
-const { handleDriverLiveUpdate } = require('../services/websocket.service');
+const {
+  handleDriverLiveUpdate,
+  handleChatMessages,
+} = require('../services/websocket.service');
 
 // Create a rate limiter to limit the number of connections per IP address
 const limiter = new RateLimiterMemory({
@@ -30,17 +33,32 @@ exports.server = (app) => {
 
     // When we receive GPS data from the client, update the driver's live location in the database
     ws.on('message', async (message) => {
-      try {
-        await handleDriverLiveUpdate(message, ws, hash);
-      } catch (err) {
-        console.error(err);
+      const { type, ...data } = JSON.parse(message);
 
-        // Send an error message to the client if JSON parsing fails
-        ws.send(JSON.stringify({ error: err }));
+      switch (type) {
+        case 'chat':
+          await handleChatMessages(data, ws, hash);
+          break;
+        case 'locationUpdate':
+          await handleDriverLiveUpdate(data, ws, hash);
+          break;
+        default:
+          console.error(`Unknown message type \${type}`);
+          break;
       }
+
+      // try {
+      //   await handleDriverLiveUpdate(message, ws, hash);
+      // } catch (err) {
+      //   console.error(err);
+
+      //   // Send an error message to the client if JSON parsing fails
+      //   ws.send(JSON.stringify({ error: err }));
+      // }
     });
 
     // When the WebSocket connection is closed, log the event
+    // TODO: delete driver and patient connections from map on connection close
     ws.on('close', (code, reason) => {
       console.log(
         `WebSocket connection closed for client ${req.socket.remoteAddress}: code=${code}, reason=${reason}`
