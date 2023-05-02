@@ -11,6 +11,7 @@
     "prettier": "prettier --write '**/*.{js,json,md}'"
   },
   "dependencies": {
+    "@google/maps": "^1.1.3",
     "aws-sdk": "^2.1363.0",
     "bcrypt": "^5.1.0",
     "bcryptjs": "^2.4.3",

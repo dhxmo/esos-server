@@ -1,3 +1,11 @@
+require('dotenv').config();
+const { GOOGLE_MAPS_API_KEY } = process.env;
+
+const googleMapsClient = require('@google/maps').createClient({
+  key: GOOGLE_MAPS_API_KEY,
+  Promise: Promise,
+});
+
 const db = require('../models');
 const { changeDriverAvailability } = require('../utils/changeAvailability');
 const Emergency = db.emergency;
@@ -17,11 +25,15 @@ exports.createEmergency = async (
 ) => {
   let assignedHospital;
 
+  // patient location
+  const patientLocation = [longitude, latitude];
+  // // driver location
+  // const sourceCoordinates
+
   // find closest driver and reserve for this call
   const closestDriver = await findClosestDriver(
     selectedAmbulanceType,
-    longitude,
-    latitude
+    patientLocation
   );
   changeDriverAvailability(
     closestDriver.driverPhone,
@@ -67,12 +79,11 @@ exports.createEmergency = async (
     );
   }
 
+  // get driver location from websocket ping for current location
+  const driverLocation = [];
+
   if (closestHospital) {
-    assignedHospital = await findClosestHospital(
-      request._id,
-      longitude,
-      latitude
-    );
+    assignedHospital = await findClosestHospital(request._id, driverLocation);
   }
 
   return {
@@ -109,14 +120,14 @@ exports.emergencyConfirmPatientPickUp = async (reqId) => {
 };
 
 //  this is crude and simplistic. optimize this thinking of edge cases later
-const findClosestDriver = async (ambulanceType, long, lat) => {
+const findClosestDriver = async (ambulanceType, patientLocation) => {
   try {
-    const closestDriver = await DriverLive.aggregate([
+    const closestDrivers = await DriverLive.aggregate([
       {
         $geoNear: {
           near: {
             type: 'Point',
-            coordinates: [long, lat],
+            coordinates: patientLocation,
           },
           distanceField: 'distance',
           spherical: true,
@@ -133,10 +144,24 @@ const findClosestDriver = async (ambulanceType, long, lat) => {
         },
       },
       {
-        $limit: 1,
+        $limit: 5,
       },
     ]);
-    return closestDriver[0];
+
+    const driverMap = new Map();
+
+    for (let i = 0; i < closestDrivers.length; i++) {
+      const driver = closestDrivers[i];
+      const driverLocation = driver.location.coordinates;
+      const travelTime = await getTravelTime(driverLocation, patientLocation);
+      driverMap.set(driver, travelTime);
+    }
+
+    const sortedDrivers = new Map(
+      [...driverMap.entries()].sort((a, b) => a[1] - b[1])
+    );
+
+    return sortedDrivers.keys().next().value;
   } catch (err) {
     console.log(err);
     throw new Error(err);
@@ -145,13 +170,13 @@ const findClosestDriver = async (ambulanceType, long, lat) => {
 
 //TODO: this is crude and simplistic. make this such that it collates real time traffic data
 //  and finds the hospital which can be reached in the least time
-const findClosestHospital = async (reqId, long, lat) => {
-  const closestHospital = await Hospital.aggregate([
+const findClosestHospital = async (reqId, driverLocation) => {
+  const closestHospitals = await Hospital.aggregate([
     {
       $geoNear: {
         near: {
           type: 'Point',
-          coordinates: [long, lat],
+          coordinates: driverLocation,
         },
         distanceField: 'distance',
         spherical: true,
@@ -167,16 +192,52 @@ const findClosestHospital = async (reqId, long, lat) => {
       },
     },
     {
-      $limit: 1,
+      $limit: 5,
     },
   ]);
-  const assignedHospital = closestHospital[0];
+
+  const hospitalMap = new Map();
+
+  for (let i = 0; i < closestHospitals.length; i++) {
+    const hospital = closestHospitals[i];
+    const hospitalLocation = hospital.location.coordinates;
+    const travelTime = await getTravelTime(driverLocation, hospitalLocation);
+    hospitalMap.set(hospital, travelTime);
+  }
+
+  const sortedHospitals = new Map(
+    [...hospitalMap.entries()].sort((a, b) => a[1] - b[1])
+  );
+
+  const assignedHospital = sortedHospitals.keys().next().value;
 
   const emergency = await Emergency.findById(reqId);
   emergency.assignedHospital = assignedHospital._id;
   await emergency.save();
 
   return assignedHospital;
+};
+
+const getTravelTime = async (startLocation, endLocation) => {
+  try {
+    const response = await googleMapsClient
+      .directions({
+        origin: startLocation,
+        destination: endLocation,
+        mode: 'driving',
+        traffic_model: 'best_guess',
+        departure_time: 'now',
+      })
+      .asPromise();
+
+    const durationInTraffic =
+      response.json.routes[0].legs[0].duration_in_traffic.value;
+
+    return durationInTraffic;
+  } catch (err) {
+    console.log(err);
+    throw new Error(err);
+  }
 };
 
 // const firebasePushNotification = async (phoneNumber) => {
