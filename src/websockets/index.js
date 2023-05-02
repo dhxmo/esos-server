@@ -2,7 +2,7 @@ const ws = require('ws');
 require('dotenv').config();
 const { PORT } = process.env;
 const { RateLimiterMemory } = require('rate-limiter-flexible');
-const { WebSocketService } = require('../services/websocket.service');
+const { handleDriverLiveUpdate } = require('../services/websocket.service');
 
 // Create a rate limiter to limit the number of connections per IP address
 const limiter = new RateLimiterMemory({
@@ -31,7 +31,7 @@ exports.server = (app) => {
     // When we receive GPS data from the client, update the driver's live location in the database
     ws.on('message', async (message) => {
       try {
-        await WebSocketService.handleDriverLiveUpdate(message, ws, hash);
+        await handleDriverLiveUpdate(message, ws, hash);
       } catch (err) {
         console.error(err);
 

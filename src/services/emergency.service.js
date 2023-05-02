@@ -2,8 +2,9 @@ const db = require('../models');
 const { changeDriverAvailability } = require('../utils/changeAvailability');
 const Emergency = db.emergency;
 const DriverLive = db.driverLive;
+const Hospital = db.hospital;
 
-const webSocketService = require('./websocket.service');
+const { driverConnections } = require('./websocket.service');
 
 exports.createEmergency = async (
   longitude,
@@ -11,16 +12,22 @@ exports.createEmergency = async (
   selectedAmbulanceType,
   emergency,
   userId,
-  userPhone
+  userPhone,
+  closestHospital
 ) => {
+  let assignedHospital;
+
   // find closest driver and reserve for this call
   const closestDriver = await findClosestDriver(
     selectedAmbulanceType,
     longitude,
     latitude
   );
-  console.log(closestDriver);
-  changeDriverAvailability(closestDriver.driverPhone, false);
+  changeDriverAvailability(
+    closestDriver.driverPhone,
+    selectedAmbulanceType,
+    false
+  );
 
   // create emergency call
   const request = await Emergency.create({
@@ -52,13 +59,19 @@ exports.createEmergency = async (
     },
   };
 
-  const driverSocket = webSocketService.driverConnections.get(
-    closestDriver.driverPhone
-  );
+  const driverSocket = driverConnections.get(closestDriver.driverPhone);
   if (driverSocket) {
     driverSocket.send(JSON.stringify(notification));
     console.log(
       `Emergency alert sent to ambulance driver ${closestDriver.driverPhone}`
+    );
+  }
+
+  if (closestHospital) {
+    assignedHospital = await findClosestHospital(
+      request._id,
+      longitude,
+      latitude
     );
   }
 
@@ -71,6 +84,7 @@ exports.createEmergency = async (
     userId: userId,
     userPhone: userPhone,
     assignedDriver: closestDriver.driverPhone,
+    assignedHospital,
   };
 };
 
@@ -85,7 +99,7 @@ exports.emergencyResolve = async (reqId) => {
 };
 
 exports.emergencyConfirmPatientPickUp = async (reqId) => {
-  const emergency = await Emergency.findById(req.body.reqId);
+  const emergency = await Emergency.findById(reqId);
 
   emergency.pickUp = true;
   emergency.pickUpAt = Date.now();
@@ -122,12 +136,47 @@ const findClosestDriver = async (ambulanceType, long, lat) => {
         $limit: 1,
       },
     ]);
-    console.log('in', closestDriver);
     return closestDriver[0];
   } catch (err) {
     console.log(err);
     throw new Error(err);
   }
+};
+
+//TODO: this is crude and simplistic. make this such that it collates real time traffic data
+//  and finds the hospital which can be reached in the least time
+const findClosestHospital = async (reqId, long, lat) => {
+  const closestHospital = await Hospital.aggregate([
+    {
+      $geoNear: {
+        near: {
+          type: 'Point',
+          coordinates: [long, lat],
+        },
+        distanceField: 'distance',
+        spherical: true,
+        query: {
+          availability: true,
+        },
+        key: 'location',
+      },
+    },
+    {
+      $sort: {
+        distance: 1,
+      },
+    },
+    {
+      $limit: 1,
+    },
+  ]);
+  const assignedHospital = closestHospital[0];
+
+  const emergency = await Emergency.findById(reqId);
+  emergency.assignedHospital = assignedHospital._id;
+  await emergency.save();
+
+  return assignedHospital;
 };
 
 // const firebasePushNotification = async (phoneNumber) => {

@@ -26,11 +26,11 @@ module.exports = function (app) {
     emergencyControllers.resolveEmergency
   );
 
-  app.patch(
-    '/api/emergency/available-hospitals',
-    [authJwt.verifyToken, authJwt.isAmbulanceDriver],
-    emergencyControllers.findClosestAvailableHospital
-  );
+  // app.patch(
+  //   '/api/emergency/available-hospitals',
+  //   [authJwt.verifyToken, authJwt.isAmbulanceDriver],
+  //   emergencyControllers.findClosestAvailableHospital
+  // );
 
   app.post(
     '/api/hospital/see-inbound-emergencies',

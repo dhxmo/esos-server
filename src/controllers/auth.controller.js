@@ -97,7 +97,11 @@ exports.ambulanceDriverLogIn = async (req, res) => {
 
 exports.ambulanceLogout = async (req, res) => {
   try {
-    await changeDriverAvailability(req.body.phoneNumber, false);
+    await changeDriverAvailability(
+      req.body.phoneNumber,
+      req.body.selectedAmbulanceType,
+      false
+    );
 
     req.session = null;
     return res

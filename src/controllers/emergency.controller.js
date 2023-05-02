@@ -31,10 +31,11 @@ exports.createEmergency = async (req, res) => {
     const result = await emergencyService.createEmergency(
       long,
       lat,
-      req.body.selectAmbulanceType,
+      req.body.selectedAmbulanceType,
       req.body.emergency,
       req.id,
-      req.body.userPhone
+      req.body.userPhone,
+      req.body.closestHospital
     );
     return res.status(200).json({ status: 'success', message: result });
   } catch (err) {
@@ -60,19 +61,10 @@ exports.getAllEmergencies = async (_, res) => {
   }
 };
 
-exports.resolveEmergency = async (req, res) => {
-  try {
-    const result = await emergencyService.emergencyResolve(req.body.reqId);
-    return res.status(200).json({ status: 'success', message: result });
-  } catch (err) {
-    return res.status(500).json({ status: 'failed', message: err });
-  }
-};
-
 exports.confirmPatientPickUp = async (req, res) => {
   try {
     const result = await emergencyService.emergencyConfirmPatientPickUp(
-      req.body.reqId
+      req.body.requestId
     );
     return res.status(200).json({ status: 'success', message: result });
   } catch (err) {
@@ -80,44 +72,22 @@ exports.confirmPatientPickUp = async (req, res) => {
   }
 };
 
-//TODO: this is crude and simplistic. make this such that it collates real time traffic data
-//  and finds the hospital which can be reached in the least time
-exports.findClosestAvailableHospital = async (req, res) => {
-  const { reqId, longitude, latitude } = req.body;
+//  TODO: for patients who want to select a specific hospital
+// exports.findClosestAvailableHospital = async (req, res) => {
+//   try {
+
+//     res.json({ status: 'success', data: assignedHospital.location });
+//   } catch (err) {
+//     res.json({ status: err });
+//   }
+// };
+
+exports.resolveEmergency = async (req, res) => {
   try {
-    const closestHospital = await Hospital.aggregate([
-      {
-        $geoNear: {
-          near: {
-            type: 'Point',
-            coordinates: [Number(longitude), Number(latitude)],
-          },
-          distanceField: 'distance',
-          spherical: true,
-          query: {
-            availability: true,
-          },
-          key: 'location',
-        },
-      },
-      {
-        $sort: {
-          distance: 1,
-        },
-      },
-      {
-        $limit: 1,
-      },
-    ]);
-    const assignedHospital = closestHospital[0];
-
-    const emergency = await Emergency.findById(reqId);
-    emergency.assignedHospital = assignedHospital._id;
-    await emergency.save();
-
-    res.json({ status: 'success', data: assignedHospital.location });
+    const result = await emergencyService.emergencyResolve(req.body.reqId);
+    return res.status(200).json({ status: 'success', message: result });
   } catch (err) {
-    res.json({ status: err });
+    return res.status(500).json({ status: 'failed', message: err });
   }
 };
 

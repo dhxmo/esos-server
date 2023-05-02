@@ -109,7 +109,7 @@ describe('Emergency Service', () => {
       expect(createdEmergency.userId).to.equal(userId);
       expect(createdEmergency.userPhone).to.equal(userPhone);
       expect(createdEmergency.assignedDriver).to.equal(
-        ambulanceDriver.phoneNumber
+        ambulanceDriver2.phoneNumber
       );
       expect(createdEmergency.resolved).to.equal(false);
     });
