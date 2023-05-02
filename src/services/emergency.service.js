@@ -20,7 +20,6 @@ exports.createEmergency = async (
 ) => {
   let assignedHospital;
 
-  // patient location
   const patientLocation = [longitude, latitude];
 
   // find closest driver and reserve for this call
@@ -35,6 +34,12 @@ exports.createEmergency = async (
     false
   );
 
+  if (!closestHospital) {
+    assignedHospital = selectedHospitalId;
+  } else {
+    assignedHospital = await findClosestHospital(patientLocation);
+  }
+
   // create emergency call
   const request = await Emergency.create({
     location: {
@@ -46,7 +51,10 @@ exports.createEmergency = async (
     userId,
     userPhone,
     assignedDriver: closestDriver.driverPhone,
+    assignedHospital,
+    createdAt: new Date.now(),
   });
+  await request.save();
 
   // TODO: test firebase notification send
   // send push notification using firebase to get ready
@@ -72,14 +80,6 @@ exports.createEmergency = async (
       `Emergency alert sent to ambulance driver ${closestDriver.driverPhone}`
     );
   }
-
-  if (!closestHospital) {
-    request.assignedHospital = selectedHospitalId;
-  } else {
-    request.assignedHospital = await findClosestHospital(patientLocation);
-  }
-
-  await request.save();
 
   return {
     location: {
