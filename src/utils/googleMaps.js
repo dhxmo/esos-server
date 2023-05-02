@@ -5,7 +5,6 @@ import { Client } from '@googlemaps/google-maps-services-js';
 const client = new Client({});
 
 const db = require('../models');
-const Emergency = db.emergency;
 const DriverLive = db.driverLive;
 const Hospital = db.hospital;
 
@@ -57,52 +56,52 @@ exports.findClosestDriver = async (ambulanceType, patientLocation) => {
   }
 };
 
-exports.findClosestHospital = async (reqId, driverLocation) => {
-  const closestHospitals = await Hospital.aggregate([
-    {
-      $geoNear: {
-        near: {
-          type: 'Point',
-          coordinates: driverLocation,
+exports.findClosestHospital = async (patientLocation) => {
+  try {
+    const closestHospitals = await Hospital.aggregate([
+      {
+        $geoNear: {
+          near: {
+            type: 'Point',
+            coordinates: patientLocation,
+          },
+          distanceField: 'distance',
+          spherical: true,
+          query: {
+            availability: true,
+          },
+          key: 'location',
         },
-        distanceField: 'distance',
-        spherical: true,
-        query: {
-          availability: true,
+      },
+      {
+        $sort: {
+          distance: 1,
         },
-        key: 'location',
       },
-    },
-    {
-      $sort: {
-        distance: 1,
+      {
+        $limit: 5,
       },
-    },
-    {
-      $limit: 5,
-    },
-  ]);
+    ]);
 
-  const hospitalMap = new Map();
+    const hospitalMap = new Map();
 
-  for (let i = 0; i < closestHospitals.length; i++) {
-    const hospital = closestHospitals[i];
-    const hospitalLocation = hospital.location.coordinates;
-    const travelTime = await getTravelTime(driverLocation, hospitalLocation);
-    hospitalMap.set(hospital, travelTime);
+    for (let i = 0; i < closestHospitals.length; i++) {
+      const hospital = closestHospitals[i];
+      const hospitalLocation = hospital.location.coordinates;
+      const travelTime = await getTravelTime(patientLocation, hospitalLocation);
+      hospitalMap.set(hospital, travelTime);
+    }
+
+    const sortedHospitals = new Map(
+      [...hospitalMap.entries()].sort((a, b) => a[1] - b[1])
+    );
+
+    const assignedHospital = sortedHospitals.keys().next().value;
+
+    return assignedHospital._id;
+  } catch (err) {
+    throw new Error(err);
   }
-
-  const sortedHospitals = new Map(
-    [...hospitalMap.entries()].sort((a, b) => a[1] - b[1])
-  );
-
-  const assignedHospital = sortedHospitals.keys().next().value;
-
-  const emergency = await Emergency.findById(reqId);
-  emergency.assignedHospital = assignedHospital._id;
-  await emergency.save();
-
-  return assignedHospital;
 };
 
 const getTravelTime = async (startLocation, endLocation) => {

@@ -15,7 +15,8 @@ exports.createEmergency = async (
   emergency,
   userId,
   userPhone,
-  closestHospital
+  closestHospital,
+  selectedHospitalId
 ) => {
   let assignedHospital;
 
@@ -72,12 +73,13 @@ exports.createEmergency = async (
     );
   }
 
-  // get driver location from websocket ping for current location
-  const driverLocation = [];
-
-  if (closestHospital) {
-    assignedHospital = await findClosestHospital(request._id, driverLocation);
+  if (!closestHospital) {
+    request.assignedHospital = selectedHospitalId;
+  } else {
+    request.assignedHospital = await findClosestHospital(patientLocation);
   }
+
+  await request.save();
 
   return {
     location: {
@@ -88,7 +90,6 @@ exports.createEmergency = async (
     userId: userId,
     userPhone: userPhone,
     assignedDriver: closestDriver.driverPhone,
-    assignedHospital,
   };
 };
 
