@@ -46,15 +46,6 @@ exports.server = (app) => {
           console.error(`Unknown message type \${type}`);
           break;
       }
-
-      // try {
-      //   await handleDriverLiveUpdate(message, ws, hash);
-      // } catch (err) {
-      //   console.error(err);
-
-      //   // Send an error message to the client if JSON parsing fails
-      //   ws.send(JSON.stringify({ error: err }));
-      // }
     });
 
     // When the WebSocket connection is closed, log the event

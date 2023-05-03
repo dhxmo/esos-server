@@ -32,30 +32,13 @@ const handleChatMessages = async (message, ws, hash) => {
 
     const recipientWs = driverConnections.get(message.recipientPhone);
     if (recipientWs) {
-      if (message.contentType === 'text') {
-        recipientWs.send(
-          JSON.stringify({
-            senderPhone: signedInUser.phoneNumber,
-            text: message.text,
-          })
-        );
-      } else if (message.contentType === 'audio') {
-        const blob = new Blob([message.audioData], { type: 'audio/webm' });
-        recipientWs.send(blob, {
+      recipientWs.send(
+        JSON.stringify({
           senderPhone: signedInUser.phoneNumber,
-          type: 'audio',
-        });
-      } else if (message.contentType === 'image') {
-        const blob = new Blob([message.imageData], { type: 'image/jpeg' });
-        recipientWs.send(blob, {
-          senderPhone: signedInUser.phoneNumber,
-          type: 'image',
-        });
-      } else {
-        ws.send(
-          JSON.stringify({ error: `Invalid message type: ${message.type}` })
-        );
-      }
+          text: message.text,
+          recordingURI: message.recordingURI,
+        })
+      );
     } else {
       ws.send(JSON.stringify({ error: `Recipient \${recipientId} not found` }));
     }
