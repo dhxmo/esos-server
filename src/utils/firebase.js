@@ -1,3 +1,6 @@
+const db = require('../models');
+const AmbulanceDriver = db.ambulanceDriver;
+
 var admin = require('firebase-admin');
 
 require('dotenv').config();
@@ -12,4 +15,33 @@ admin.initializeApp({
   }),
 });
 
-module.exports.admin = admin;
+exports.firebasePushNotification = async (phoneNumber) => {
+  const messaging = admin.messaging();
+  const driverToken = await AmbulanceDriver.findOne({ phoneNumber });
+
+  // Send the push notification to the driver's device
+  const payload = {
+    data: {
+      title: 'New Emergency Call',
+      body: 'EMERGENCY! Get ready to serve someone in need',
+      click_action: 'OPEN_EMERGENCY_CALL',
+    },
+    token: driverToken.jwtToken,
+  };
+  console.log('pay', payload);
+
+  try {
+    await messaging
+      .send(payload)
+      .then((response) => {
+        console.log('Successfully sent message:', response);
+      })
+      .catch((error) => {
+        console.log('Error sending message:', error);
+      });
+    console.log('firebase push successful');
+  } catch (err) {
+    console.log('firebase push failed');
+    throw new Error(err);
+  }
+};

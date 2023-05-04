@@ -32,11 +32,14 @@ const handleChatMessages = async (message, ws, hash) => {
 
     const recipientWs = driverConnections.get(message.recipientPhone);
     if (recipientWs) {
+      // get the audio data as a base64-encoded string
+      const audioData = await message.recording.blob.readAsStringAsync();
+
       recipientWs.send(
         JSON.stringify({
           senderPhone: signedInUser.phoneNumber,
           text: message.text,
-          recordingURI: message.recordingURI,
+          audioData,
         })
       );
     } else {
