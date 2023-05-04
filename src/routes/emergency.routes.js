@@ -8,21 +8,22 @@ module.exports = function (app) {
     next();
   });
 
+  // TODO: uncomment all jwt verifications. only for testing
   app.post(
     '/api/emergency/create',
-    [authJwt.verifyToken, authJwt.isUser, verifyUserState.checkBannedUser],
+    // [authJwt.verifyToken, authJwt.isUser, verifyUserState.checkBannedUser],
     emergencyControllers.createEmergency
   );
 
   app.patch(
     '/api/emergency/confirm-pick-up',
-    [authJwt.verifyToken, authJwt.isAmbulanceDriver],
+    // [authJwt.verifyToken, authJwt.isAmbulanceDriver],
     emergencyControllers.confirmPatientPickUp
   );
 
   app.patch(
     '/api/emergency/resolved',
-    [authJwt.verifyToken, authJwt.isAmbulanceDriver],
+    // [authJwt.verifyToken, authJwt.isAmbulanceDriver],
     emergencyControllers.resolveEmergency
   );
 
@@ -34,15 +35,9 @@ module.exports = function (app) {
 
   app.get(
     '/api/hospital/get-all-available',
-    [authJwt.verifyToken, authJwt.isUser, verifyUserState.checkBannedUser],
+    // [authJwt.verifyToken, authJwt.isUser, verifyUserState.checkBannedUser],
     emergencyControllers.getAvailableHospitals
   );
-
-  // app.post("/api/emergency/audio", [
-  //     authJwt.verifyToken,
-  //     authJwt.isUser,
-  //     verifyUserState.checkBannedUser
-  // ], emergencyControllers.uploadAudioToS3);
 
   app.get(
     '/api/emergency/get-all',

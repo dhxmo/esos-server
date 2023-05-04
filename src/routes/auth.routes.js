@@ -61,6 +61,7 @@ module.exports = function (app) {
 
   //  User functionality
   app.post('/api/user/send-otp', [rateLimitMiddleware], controller.userSendOtp);
+  // TODO: add some kind of rate limit here that doesnt duplicate entry into above table
   app.post('/api/user/verify-otp', controller.userVerifyOtp);
 
   // Hospital functionality
