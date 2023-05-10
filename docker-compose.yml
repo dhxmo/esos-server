@@ -13,6 +13,7 @@ services:
   #     TWILIO_SERVICE_SID: "VA7afe259265faf97cbc7f1d27a03d093d"
   #     HASH_SECRET: "DDB651DA4722588F9A243EA7845BBCB0"
   #     INIT_VECTOR: "D39C92D9427A3F54"
+  #     GOOGLE_MAPS_API_KEY: 'AIzaSyAHBkw8A9lx-GoK7GlpQqjvrOVyXxP4Pog'
   #   ports:
   #     - 8080:8080
   #   depends_on:

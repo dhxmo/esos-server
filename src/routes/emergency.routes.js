@@ -34,7 +34,7 @@ module.exports = function (app) {
   );
 
   app.get(
-    '/api/hospital/get-all-available',
+    '/api/hospital/get-all-available/:city',
     // [authJwt.verifyToken, authJwt.isUser, verifyUserState.checkBannedUser],
     emergencyControllers.getAvailableHospitals
   );

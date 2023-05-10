@@ -1,27 +1,9 @@
 const db = require('../models');
+const Emergency = db.emergency;
+const Hospital = db.hospital;
 
 const services = require('../services');
-const webSocketService = services.websocket;
 const emergencyService = services.emergency;
-
-const Emergency = db.emergency;
-const DriverLive = db.driverLive;
-const Hospital = db.hospital;
-// const AmbulanceDriver = db.ambulanceDriver;
-// const Recording = db.audioRecord;
-
-const { changeDriverAvailability } = require('../utils/changeAvailability');
-// const { admin } = require('../utils/firebase');
-
-// const AWS = require('aws-sdk');
-// const fetch = require('node-fetch');
-// require("dotenv").config()
-// const { AWS_S3_BUCKET, AWS_SECRET_ACCESS_KEY, AWS_ACCESS_ID } = process.env;
-
-// const s3 = new AWS.S3({
-//     accessKeyId: AWS_ACCESS_ID,
-//     secretAccessKey: AWS_SECRET_ACCESS_KEY,
-// })
 
 exports.createEmergency = async (req, res) => {
   const long = Number(req.body.longitude);
@@ -74,7 +56,7 @@ exports.confirmPatientPickUp = async (req, res) => {
 };
 
 exports.getAvailableHospitals = async (req, res) => {
-  const city = req.body.city;
+  const city = req.params.city;
 
   try {
     let h = [];

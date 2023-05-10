@@ -2,10 +2,7 @@ const ws = require('ws');
 require('dotenv').config();
 const { PORT } = process.env;
 const { RateLimiterMemory } = require('rate-limiter-flexible');
-const {
-  handleDriverLiveUpdate,
-  handleChatMessages,
-} = require('../services/websocket.service');
+const { handleDriverLiveUpdate } = require('../services/websocket.service');
 
 // Create a rate limiter to limit the number of connections per IP address
 const limiter = new RateLimiterMemory({
@@ -36,9 +33,6 @@ exports.server = (app) => {
       const { type, ...data } = JSON.parse(message);
 
       switch (type) {
-        case 'chat':
-          await handleChatMessages(data, ws, hash);
-          break;
         case 'locationUpdate':
           await handleDriverLiveUpdate(data, ws, hash);
           break;

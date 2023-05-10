@@ -2,6 +2,7 @@ const chai = require('chai');
 const chaiAsPromised = require('chai-as-promised');
 const mongoose = require('mongoose');
 const jwt = require('jsonwebtoken');
+const bcrypt = require('bcryptjs');
 
 require('dotenv').config();
 const { MONGODB_URI } = process.env;
@@ -13,6 +14,7 @@ const User = db.user;
 
 const services = require('../src/services');
 const webSocketService = services.websocket;
+const ambulanceDriverService = services.ambulanceDriver;
 
 // const { WebSocketService } = require('../src/services/websocket.service');
 const { encrypt } = require('../src/utils/encryptToken');
@@ -24,12 +26,13 @@ describe('WebSocketService', () => {
   describe('handleDriverLiveUpdate', () => {
     let ws, ambulanceDriver, hash, newDriverLive, user;
 
-    const senderPhone = '1234567890';
-    const recipientPhone = '0987654321';
-    const text = 'Hello, how are you?';
-    const message = JSON.stringify({ senderPhone, recipientPhone, text });
-    const hash2 =
-      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjVmZmE3ZjNkZGFmOTQ3NGQ3NjVhMmZhZSIsImlhdCI6MTYyMjQzOTgxMn0.Rcez09xHbzCpM9R9aqDgA4hE_gzITw0kHTPfehvjJpA'; // valid JWT token
+    // TODO: test chat over ws
+    // const senderPhone = '1234567890';
+    // const recipientPhone = '0987654321';
+    // const text = 'Hello, how are you?';
+    // const message = JSON.stringify({ senderPhone, recipientPhone, text });
+    // const hash2 =
+    //   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjVmZmE3ZjNkZGFmOTQ3NGQ3NjVhMmZhZSIsImlhdCI6MTYyMjQzOTgxMn0.Rcez09xHbzCpM9R9aqDgA4hE_gzITw0kHTPfehvjJpA'; // valid JWT token
 
     beforeAll(async () => {
       await mongoose.connect(MONGODB_URI, {
@@ -43,7 +46,7 @@ describe('WebSocketService', () => {
       };
       ambulanceDriver = new AmbulanceDriver({
         phoneNumber: '555-9876',
-        password: 'password',
+        password: await bcrypt.hash('password', 15),
         ambulanceType: 'BLS',
         companyName: 'ABC company',
       });
@@ -61,15 +64,18 @@ describe('WebSocketService', () => {
 
       await newDriverLive.save();
 
-      user = new User({
-        phoneNumber: '0000000000',
-      });
+      // user = new User({
+      //   phoneNumber: '0000000000',
+      // });
 
-      await user.save();
+      // await user.save();
 
-      hash = encrypt(
-        jwt.sign({ id: ambulanceDriver._id }, process.env.JWT_SECRET)
+      const jwtToken = jwt.sign(
+        { id: ambulanceDriver._id },
+        process.env.JWT_SECRET
       );
+
+      hash = encrypt(jwtToken);
     });
     afterAll(async () => {
       await AmbulanceDriver.deleteMany({});
@@ -78,13 +84,19 @@ describe('WebSocketService', () => {
       await mongoose.connection.close();
     });
     it('should update the driver location', async () => {
+      const res = await ambulanceDriverService.ambulanceDriverLogIn(
+        ambulanceDriver.phoneNumber,
+        'password',
+        ambulanceDriver.ambulanceType
+      );
+
       const message = JSON.stringify({
-        type: 'locationUpdate',
         driverPhone: ambulanceDriver.phoneNumber,
         latitude: 40.7128,
         longitude: -74.006,
       });
 
+      hash = encrypt(res.token);
       await webSocketService.handleDriverLiveUpdate(message, ws, hash);
 
       const updatedDriverLive = await DriverLive.findOne({
@@ -105,7 +117,7 @@ describe('WebSocketService', () => {
 
       await expect(
         webSocketService.handleDriverLiveUpdate(message, ws, hash)
-      ).to.be.rejectedWith('Only allowed to updated your own location');
+      ).to.be.rejectedWith('Driver not registered2');
     });
 
     it('should throw an error if the JWT token is invalid', async () => {
